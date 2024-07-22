@@ -1,0 +1,60 @@
+// Here you can add other styles
+.align-right {
+    display:flex;
+    justify-content: flex-end;
+    margin-bottom: 10px;
+}
+
+.MuiFormControl-root .css-o9k5xi-MuiInputBase-root-MuiOutlinedInput-root,
+.css-1jy569b-MuiFormLabel-root-MuiInputLabel-root,
+.css-1laqsz7-MuiInputAdornment-root,
+.css-1yq5fb3-MuiButtonBase-root-MuiIconButton-root,
+.css-1d3z3hw-MuiOutlinedInput-notchedOutline {
+    color: var(--cui-body-color) !important;
+}
+
+.css-1d3z3hw-MuiOutlinedInput-notchedOutline {
+    border: var(--cui-border-width) solid var(--cui-border-color) !important;
+}
+
+body {
+    > div.session-loading, > div.page-loading {
+        display: flex;
+        justify-content: center;
+        align-items: center;
+        height: 80vh;
+    }
+    
+    > div.session-loading > .spinner-grow.text-primary {
+        width: 100px;
+        height: 100px;
+    }    
+}
+.password-alert {
+    &.invalid {
+        color: #d00;
+    }
+    height: 20px;
+    color: #fff;
+    transition-duration: 0.15s;
+}
+.notifications {
+    max-width: 400px;
+    max-height: 600px;
+    .dropdown-item {
+        &.confirmed { background-color: #d5d5d5; }
+        text-overflow: ellipsis;
+        height: 50px;
+        overflow: hidden;
+        white-space: nowrap;
+
+        .notification-timestamp {
+            color: var(--cui-dropdown-header-color);
+            font-size: 0.75rem;
+            text-align: right;
+        }
+    }
+    li {
+        cursor: pointer;
+    }
+}
