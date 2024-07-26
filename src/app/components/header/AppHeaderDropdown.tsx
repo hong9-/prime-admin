@@ -26,7 +26,7 @@ import {
 import CIcon from '@coreui/icons-react'
 
 import avatar8 from 'assets/images/avatars/8.jpg'
-import { signOut, useSession } from 'next-auth/react'
+import { SignInAuthorizationParams, signOut, useSession } from 'next-auth/react'
 
 const AppHeaderDropdown = () => {
   const onLogOut = async()=> {

@@ -2,7 +2,7 @@
 
 import React, { useEffect, useRef } from 'react'
 import { NavLink } from 'react-router-dom'
-import { useAppSelector, useAppDispatch } from '../hooks'
+import { useAppSelector, useAppDispatch } from 'app/hooks'
 import {
   CContainer,
   CDropdown,

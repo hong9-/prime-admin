@@ -36,7 +36,7 @@ const AppContent = () => {
               )
             )
           })}
-          <Route path="/" element={<Navigate to="Calendar" replace />} />
+          <Route path="/" element={<Navigate to="ScheduleList" replace />} />
         </Routes> */}
       </Suspense>
     </CContainer>

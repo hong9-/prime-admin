@@ -28,13 +28,13 @@ import { cilUser } from '@coreui/icons'
 const UserInfo = (props: any) => {
   const {visible, onClose, onSubmit, onRemove, user} = props;
   const [currentUser, setCurrentUser] = useState();
-  const [id, setId] = useState();
+  const [email, setEmail] = useState();
   const [name, setName] = useState();
   const [role, setRole] = useState();
   const [inited, setInited] = useState();
   useEffect(()=> {
     if(!currentUser) {
-      setId(user ? user.id : "");
+      setEmail(user ? user.email : "");
       setName(user ? user.name: "");
       setRole(user ? user.role: "");
       setInited(user ? user.inited: "");
@@ -59,8 +59,8 @@ const UserInfo = (props: any) => {
               placeholder="ID"
               floatingLabel="ID"
               autoComplete="user-id"
-              value={id}
-              onChange={(e:any)=>setId(e.target.value)}
+              value={email}
+              onChange={(e:any)=>setEmail(e.target.value)}
             />
           </CInputGroup>
           <CInputGroup className="mb-4">
@@ -98,10 +98,10 @@ const UserInfo = (props: any) => {
         </CModalBody>
         <CModalFooter>
           {user ?
-            <CButton color="secondary" onClick={()=>onRemove(id)}>삭제</CButton>
+            <CButton color="secondary" onClick={()=>onRemove(email)}>삭제</CButton>
           :null}
           <CButton color="primary" onClick={()=> {
-            onSubmit({id, name, role, inited});
+            onSubmit({email, name, role, inited});
           }}>{user ? "저장" : "생성"}</CButton>
           <CButton color="secondary" onClick={()=> {setCurrentUser(undefined);onClose();}}>
             닫기
@@ -112,4 +112,4 @@ const UserInfo = (props: any) => {
   )
 }
 
-export default React.memo(UserInfo);
+export default UserInfo;

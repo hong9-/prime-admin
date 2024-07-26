@@ -2,12 +2,12 @@ import { BloomFilter } from 'next/dist/shared/lib/bloom-filter'
 import React, { LazyExoticComponent } from 'react'
 
 const Dashboard = React.lazy(() => import('./views/Dashboard'))
-const Calendar = React.lazy(() => import('./views/Calendar'))
+const ScheduleList = React.lazy(() => import('./views/ScheduleList'))
 const UserList = React.lazy(() => import('./views/UserList'))
 // const Colors = React.lazy(() => import('./views/theme/colors/Colors'))
 // const Typography = React.lazy(() => import('./views/theme/typography/Typography'))
 const Login = React.lazy(() => import('./Login/page'))
-const CreatePassword = React.lazy(() => import('./create-password'))
+const CreatePassword = React.lazy(() => import('./CreatePassword/page'))
 const Test = React.lazy(() => import('./api/test'));
 
 // Base
@@ -64,7 +64,8 @@ export interface route {
 }
 const routes: Array<route> = [
   { path: '/', exact: true, name: 'Home', element: ()=><></>},
-  { path: '/Calendar', exact: true, name: '방문일정', element: Calendar},
+  { path: '/ScheduleList', exact: true, name: '방문일정', element: ScheduleList},
+  { path: '/ScheduleList/*', exact: true, name: '방문일정', element: ScheduleList},
   { path: '/UserList', exact: true, name: '직원관리', element: UserList},
   { path: '/Dashboard', name: '요약', element: Dashboard },
   // { path: '/CreatePassword', exact: true, name: '비밀번호 생성', element: CreatePassword},

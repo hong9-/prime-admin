@@ -11,10 +11,17 @@ const initialState:state = {
   sidebarShow: true,
   theme: 'light',
   userInfo: {
-    userId: '',
+    email: '',
     name: '',
     role: '',
   },
+}
+
+export interface Notification {
+  id: string,
+  message: string,
+  link: string,
+  confirmed: boolean,
 }
 
 export interface nextState {
@@ -23,11 +30,12 @@ export interface nextState {
 }
 
 export interface UserInfo {
-  userId: string,
+  email: string,
   name: string,
   role: string,
-  sales?: Array<UserInfo>,
-  tm?: Array<UserInfo>,
+  Notifications?: Array<Notification>
+  managers?: Array<UserInfo>,
+  workers?: Array<UserInfo>,
 }
 
 const changeState = (state = initialState, { type, ...rest }: nextState) => {

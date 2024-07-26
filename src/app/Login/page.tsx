@@ -25,7 +25,6 @@ const Login = () => {
   const [ userId, setUserId ] = useState('');
   const [ pw, setPw ] = useState('');
   const [ checkPassword, setCheckPassword ] = useState(false);
-  const route = useRouter();
 
   const setter = {
     setUserId,

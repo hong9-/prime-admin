@@ -18,9 +18,13 @@ import {
 } from '@coreui/react'
 import CIcon from '@coreui/icons-react'
 import { cilLockLocked, cilUser } from '@coreui/icons'
+import { apiRequest } from "app/api/apiRequest";
+import { useSession } from "next-auth/react";
 // import { useNavigate } from "react-router-dom";
 
 const CreatePassword = () => {
+  let { update } = useSession()
+
   const [validate, setValidate] = useState(false);
   const [newPasswordValid, setNewPasswordValid] = useState(false);
   const [newPasswordInvalid, setNewPasswordInvalid] = useState(false);
@@ -43,14 +47,20 @@ const CreatePassword = () => {
     }
   }
   
-  const onSubmit = (event:any)=> {
+  const onSubmit = async(event:any)=> {
     event.preventDefault();
     let { newPassword, confirmPassword } = event.target;
     newPassword = newPassword.value;
     confirmPassword = confirmPassword.value;
     if (passwordSameValidation(newPassword, confirmPassword)) {
+      const result = await apiRequest('post', 'auth/newpassword', {
+        newPassword,
+        confirmPassword,
+      });
+      console.log(result);
       // need redirect
       // navigate('/Login');
+      update();
     } else {
       console.log('onsubmit', event, newPassword, confirmPassword, validate)
     }

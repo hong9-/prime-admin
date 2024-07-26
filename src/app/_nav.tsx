@@ -21,7 +21,7 @@ const _nav = [
   {
     component: CNavItem,
     name: '일정',
-    href: '/Calendar',
+    href: '/ScheduleList',
     className: 'nav-link',
     icon: <CIcon icon={cilCalendar} customClassName="nav-icon" />,
     // badge: {

@@ -1,13 +1,7 @@
 "use client"
 import React, { Suspense, useEffect } from 'react'
-import { BrowserRouter, Navigate, Route, Routes } from 'react-router-dom'
 import { CSpinner, useColorModes } from '@coreui/react'
 import './scss/style.scss'
-import { Router } from 'next/router'
-import CreatePassword from './create-password'
-import Login from './Login/page'
-import { auth } from 'auth'
-import { redirect, useRouter } from 'next/navigation'
 import { useAppSelector } from 'app/hooks'
 // Containers
 const DefaultLayout = React.lazy(() => import('./layout/DefaultLayout'))
@@ -15,7 +9,7 @@ const DefaultLayout = React.lazy(() => import('./layout/DefaultLayout'))
 // Pages
 // const Login = React.lazy(() => import('./views/Login'))
 // const Register = React.lazy(() => import('./views/pages/register/Register'))
-const Calendar = React.lazy(() => import('./views/Calendar'))
+// const ScheduleList = React.lazy(() => import('./views/ScheduleList'))
 // const Page404 = React.lazy(() => import('./views/pages/page404/Page404'))
 // const Page500 = React.lazy(() => import('./views/pages/page500/Page500'))
 
@@ -25,7 +19,7 @@ const App = () => {
   // let session = undefined;
 
   useEffect(() => {
-    const urlParams = new URLSearchParams(window.location.href.split('?')[1])
+    // const urlParams = new URLSearchParams(window.location.href.split('?')[1])
     // const theme = urlParams.get('theme') && urlParams.get('theme').match(/^[A-Za-z0-9\s]+/)[0]
     const theme = "";
     if (theme) {

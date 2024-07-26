@@ -28,7 +28,11 @@ body {
     > div.session-loading > .spinner-grow.text-primary {
         width: 100px;
         height: 100px;
-    }    
+    }
+    .no-scroll-bar::-webkit-scrollbar {
+        right: 0;
+        // display: none;
+    }
 }
 .password-alert {
     &.invalid {

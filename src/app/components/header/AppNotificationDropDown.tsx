@@ -26,9 +26,10 @@ import CIcon from '@coreui/icons-react'
 
 import avatar8 from 'assets/images/avatars/8.jpg'
 import { SessionContextValue, signOut, useSession } from 'next-auth/react'
-import { redirect } from 'next/navigation'
-import { Notification } from "auth";
+import { Notification } from "app/store";
 import { CDropdownContext } from '@coreui/react/dist/esm/components/dropdown/CDropdown'
+import Link from 'next/link'
+import { useRouter } from 'next/navigation'
 
 const exampleNotifications: Array<Notification> = [
   {
@@ -55,34 +56,34 @@ const exampleNotifications: Array<Notification> = [
 ]
 const AppNotificationDropdown = () => {
   const { data } = useSession();
+  const router = useRouter()
   useEffect(()=>{}, [])
 
-  const notiList:Array<Notification> = data?.user?.notifications || exampleNotifications;
+  const notiList:Array<Notification> = data?.user?.Notifications || exampleNotifications;
   const onClick = (noti: Notification)=>{
     console.log(noti);
+    router.push(noti.link);
     // redirect('/Schedule/')
   }
 
   return (
     <CDropdown variant="nav-item">
-      <CDropdownToggle  className="" caret={false}>
+      <CDropdownToggle  className="" caret={false} disabled={notiList.length === 0}>
         <CIcon icon={cilBell} size="lg" />
-        {/* <CIcon icon={cilUser} className="md" /> */}
-        {/* <CAvatar src={avatar8.src} size="md" /> */}
       </CDropdownToggle>
       <CDropdownMenu className="pt-0 notifications" >
         {/* <CDropdownHeader className="bg-body-secondary fw-semibold mb-2">알림</CDropdownHeader> */}
         {notiList.map((noti: Notification, i: number)=> (
-          <>
-            <CDropdownItem
-              key={i}
-              className={(noti.confirmed ? "confirmed" : "")}
-              onClick={()=>onClick(noti)}>
+          <CDropdownItem
+            key={i}
+            className={(noti.confirmed ? "confirmed" : "")}
+            onClick={()=>onClick(noti)}>
+            {/* <Link href={`/ScheduleList/${noti.id}`}> */}
               <CIcon icon={noti.confirmed ? cilBellExclamation : cilBell } className="me-2" />
               {noti.message}
               <div className="notification-timestamp">2012/03/05 07:35</div>
-            </CDropdownItem>
-          </>
+            {/* </Link> */}
+          </CDropdownItem>
         ))}
       </CDropdownMenu>
     </CDropdown>

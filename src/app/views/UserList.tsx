@@ -1,7 +1,7 @@
 "use client";
 
 import "core-js";
-import React, { useEffect, useState } from 'react'
+import React, { useEffect, useState, Suspense } from 'react'
 import {
   CButton,
   CCard,
@@ -15,6 +15,7 @@ import {
   CTableHead,
   CTableHeaderCell,
   CTableRow,
+  CSpinner,
   CCol,
   CContainer,
   CForm,
@@ -28,46 +29,48 @@ import CIcon from '@coreui/icons-react'
 import { cilLockLocked, cilUser } from '@coreui/icons'
 import { setServers } from "dns";
 import UserInfo from "./UserInfo";
+import { apiRequest } from "app/api/apiRequest";
 
 interface person {
-  id: string,
+  email: string,
   name: string,
   role: string,
   inited: boolean,
 }
+
 const examplePeople: Array<person> = [
   {
-    id: 'tm001',
+    email: 'tm001',
     name: '김모씨',
     role: 'TM',
     inited: false,
   },
   {
-    id: 'tm002',
+    email: 'tm002',
     name: '이모씨',
     role: 'TM',
     inited: true,
   },
   {
-    id: 'tm003',
+    email: 'tm003',
     name: '박모씨',
     role: 'TM',
     inited: false,
   },
   {
-    id: 'sales001',
+    email: 'sales001',
     name: '최모씨',
     role: 'SALE',
     inited: false,
   },
   {
-    id: 'sales002',
+    email: 'sales002',
     name: '정모씨',
     role: 'SALE',
     inited: false,
   },
   {
-    id: 'sales003',
+    email: 'sales003',
     name: '홍모씨',
     role: 'SALE',
     inited: false,
@@ -78,10 +81,22 @@ let _modal: boolean = false;
 let _selectedUser: any = undefined;
 const UserList = () => {
   let [ modal, setModal ] = useState(_modal);
+  let [ people, setPeople ] = useState(undefined as Array<person> | undefined);
   let [ user, setUser ] = useState(_selectedUser);
   user = _selectedUser;
+
   useEffect(()=> {
-    console.log('useEffect');
+    apiRequest('get', 'user').then(({ code, people: _people })=> {
+      if(code !== 0) {
+        alert('error');
+        return;
+      }
+      console.log('setPeople done', _people)
+      if(_people)
+        return _people;
+        // setPeople(_people);
+    }).then((_people)=> setPeople(_people));
+  
   }, []);
 
   const onPasswordInitClick = (id:string)=> {
@@ -115,11 +130,13 @@ const UserList = () => {
         'Content-Type': 'application/json',
       },
       body: JSON.stringify(user),
-    })
+    }).then((result)=> {
+      console.log(result);
+    });
     setModal(false);
   }
 
-  console.log(modal, user, _selectedUser);
+  console.log('render check', modal, user, _selectedUser, people);
   return (
     <>
       <CCard className="mb-4">
@@ -138,17 +155,20 @@ const UserList = () => {
               </CTableRow>
             </CTableHead>
             <CTableBody>
-              {examplePeople.map((person, i)=> {
+              {people ? people.map((person, i)=> {
                 return (
-                  <CTableRow key={person.id}>
-                    <CTableDataCell onClick={()=>onUserClick(person)}>{person.id}</CTableDataCell>
+                  <CTableRow key={i}>
+                    <CTableDataCell onClick={()=>onUserClick(person)}>{person.email}</CTableDataCell>
                     <CTableDataCell onClick={()=>onUserClick(person)}>{person.name}</CTableDataCell>
                     <CTableDataCell onClick={()=>onUserClick(person)}>{person.role}</CTableDataCell>
-                    <CTableDataCell>{person.inited ? <CButton color="danger" onClick={()=>onPasswordInitClick(person.id)}>재설정</CButton> : null}</CTableDataCell>
-                    <CTableDataCell><CButton color="danger" onClick={()=>onUserRemove(person.id)}>삭제</CButton></CTableDataCell>
+                    <CTableDataCell>{person.inited ? <CButton color="danger" onClick={()=>onPasswordInitClick(person.email)}>재설정</CButton> : null}</CTableDataCell>
+                    <CTableDataCell><CButton color="danger" onClick={()=>onUserRemove(person.email)}>삭제</CButton></CTableDataCell>
                   </CTableRow>
                 )
-              })}
+              }):
+              <div className="pt-3 page-loading text-center">
+                <CSpinner color="primary" variant="grow" />
+              </div>}
             </CTableBody>
           </CTable>
         </CCardBody>

@@ -21,8 +21,9 @@ model User {
   image             String?
 
   // db for work
-  role              String
+  role              Role
   needPasswordReset Boolean
+  hash              String          @default("yo033lcrEG2PNL4W1-wkMun3BYCUxLXmpjQttMTDUIep2eHX5JzO8FrKH-yt9QE8NSYtPQF6utTU9qGYfeC_6w")
 
   Session           Session[]
   Account           Account?
@@ -32,32 +33,32 @@ model User {
   // db for work
   Notifications     Notification[]
   Schedule          Schedule[]                              // as TM: 스케줄을 만들거나 관찰하는 사람.
-  WorkingSchedule   Schedule[] @relation("WorkerSchedule")  // as SALES: 이행해야할 스케줄
+  WorkingSchedule   Schedule[]  @relation("WorkerSchedule")  // as SALES: 이행해야할 스케줄
 
-  createdAt         DateTime @default(now())
-  updatedAt         DateTime @updatedAt
+  createdAt         DateTime    @default(now())
+  updatedAt         DateTime    @updatedAt
 
-  managers          User[]    @relation("Managed")
-  workers           User[]    @relation("Managed")
+  managers          User[]      @relation("Managed")
+  workers           User[]      @relation("Managed")
 }
 
 model Notification {
-  id        String   @id @default(cuid())
+  id        String    @id @default(cuid())
   userId    String
   message   String
   link      String
-  confirmed Boolean @default(false)
-  createdAt DateTime @default(now())
+  confirmed Boolean   @default(false)
+  createdAt DateTime  @default(now())
 
-  user      User  @relation(fields: [userId], references: [id])
+  user      User      @relation(fields: [userId], references: [id])
 }
 
 model Schedule {
-  id          String  @id @default(cuid())
+  id          Int  @id @default(autoincrement())
   date        DateTime
   address     String
   creatorId   String
-  note        String
+  note        String?
   result      String
 
   manager     User[]  @relation("WorkerSchedule") // 스케줄을 이행하고 결과를 반영하는 사람.
@@ -81,7 +82,6 @@ model Account {
   id_token                  String? @db.Text
   session_state             String?
   refresh_token_expires_in  Int?
-  hash                      String
   user                      User?   @relation(fields: [userId], references: [id])
 
   createdAt DateTime @default(now())
@@ -128,3 +128,8 @@ model Authenticator {
   @@id([userId, credentialID])
 }
 
+enum Role {
+  ADMIN
+  TM
+  SALES
+}

@@ -31,8 +31,9 @@ import {
 import { AdapterDayjs } from '@mui/x-date-pickers/AdapterDayjs';
 import dayjs from 'dayjs'
 import { UserInfo, state } from 'app/store'
-import { dateToForm } from './Calendar'
+import { dateToForm } from './ScheduleList'
 import { useAppSelector } from 'app/hooks'
+import { useSession } from 'next-auth/react'
 
 const ScheduleInfo = (props:any) => {
   const { visible, onClose, onSubmit, schedule } = props;
@@ -43,18 +44,19 @@ const ScheduleInfo = (props:any) => {
   console.log(test);
   const [date, setDate] = useState(test);
   const [manager, setManager] = useState('');
+  // const { workers } = useSession().data;
   
 
-  let currentSales: Array<UserInfo> = userInfo && userInfo.sales || [{
-    userId: 'abcde',
+  let currentSales: Array<UserInfo> = userInfo?.workers || [{
+    email: 'abcde',
     name: '박과장',
     role: 'sales',
   }, {
-    userId: 'fghij',
+    email: 'fghij',
     name: '김대리',
     role: 'sales',
   }, {
-    userId: 'klmno',
+    email: 'klmno',
     name: '이대리',
     role: 'sales',
   }];
@@ -146,7 +148,7 @@ const ScheduleInfo = (props:any) => {
                   >
                     <option>담당자 선택</option>
                     {currentSales.map((_man)=>(
-                      <option key={_man.userId}>{_man.name}</option>
+                      <option key={_man.email}>{_man.name}</option>
                     ))}
                   </CFormSelect>
 

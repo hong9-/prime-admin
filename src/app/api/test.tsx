@@ -1,5 +1,5 @@
 import { auth } from "../../auth"
-import handler from "./auth/login"
+// import handler from "./auth/l"
 
 const Test = ()=> {
   return (
