@@ -34,20 +34,25 @@ import { UserInfo, state } from 'app/store'
 import { dateToForm } from './ScheduleList'
 import { useAppSelector } from 'app/hooks'
 import { useSession } from 'next-auth/react'
+import { useRouter } from 'next/navigation'
+
+import { Address, DaumPostcodeEmbed } from "react-daum-postcode";
 
 const ScheduleInfo = (props:any) => {
   const { visible, onClose, onSubmit, schedule } = props;
   const { userInfo } = useAppSelector((state:state)=>state) || {userId: '', name: '', role: '', sales: []};
-  const [currentSchedule, setCurrentSchedule] = useState();
-  const [address, setAddress] = useState('');
+  const [ currentSchedule, setCurrentSchedule ] = useState();
   let test = dateToForm(new Date(), true);
-  console.log(test);
-  const [date, setDate] = useState(test);
-  const [manager, setManager] = useState('');
-  // const { workers } = useSession().data;
+  // console.log(test);
+  const [ address, setAddress ] = useState('');
+  const [ date, setDate ] = useState(test);
+  const [ manager, setManager ] = useState('담당자 선택');
+  const [ result, setResult ] = useState('방문 예정');
+  const [ addressSoftModal, setAddressSoftModal ] = useState(false)
+  const { workers } = useSession().data as any;
   
-
-  let currentSales: Array<UserInfo> = userInfo?.workers || [{
+  console.log(userInfo);
+  let currentSales: Array<UserInfo> = workers || [{
     email: 'abcde',
     name: '박과장',
     role: 'sales',
@@ -82,13 +87,25 @@ const ScheduleInfo = (props:any) => {
     setManager(schedule ? schedule.manager: "");
     onClose();
   }
-
+  const onAddressModalClose = ()=> {
+    setAddressSoftModal(false);
+  }
   const onScheduleSubmit = (event: FormEvent)=> {
     console.log(event);
     onSubmit(event);
     setAddress(schedule ? schedule.address: "");
     setDate(schedule ? schedule.date: "");
     setManager(schedule ? schedule.manager: "");
+  }
+
+  const handleAddress = (_address: Address)=> {
+    console.log(_address)
+    onAddressModalClose();
+    // setAddress(_address);
+  }
+
+  const handleChange = (e)=> {
+
   }
   return (
     <>
@@ -112,7 +129,8 @@ const ScheduleInfo = (props:any) => {
                   floatingLabel="주소"
                   autoComplete="new-password"
                   value={address}
-                  onChange={(event)=> {console.log(this, event)}}
+                  onClick={()=>setAddressSoftModal(true)}
+                  onChange={(e)=> {setAddress(e.currentTarget.value)}}
                 />
               </CInputGroup>
               <CInputGroup className="mb-4">
@@ -132,19 +150,16 @@ const ScheduleInfo = (props:any) => {
                   ampm={false}
                   value={dayjs(date)}
                   // defaultValue={dayjs(Date.now())}
-                  onChange={(event)=> {console.log(this, event)}}
+                  onChange={(e, b)=> {console.log(e, this, b)}}//setDate(e.currentTarget.value)}}
                 />
               </CInputGroup>
               <CInputGroup className="mb-4">
                 <CInputGroupText>
                   <CIcon icon={cilUser} />
                 </CInputGroupText>
-                  {/* <CInputGroupText as="label" htmlFor="inputGroupSelect01">
-                    Options
-                  </CInputGroupText> */}
                   <CFormSelect id="inputGroupSelect01"
                     value={manager}
-                    onChange={(event)=> {console.log(this, event)}}
+                    onChange={(e)=> {setManager(e.currentTarget.value)}}
                   >
                     <option>담당자 선택</option>
                     {currentSales.map((_man)=>(
@@ -157,12 +172,9 @@ const ScheduleInfo = (props:any) => {
                 <CInputGroupText>
                   <CIcon icon={cilCheck} />
                 </CInputGroupText>
-                  {/* <CInputGroupText as="label" htmlFor="inputGroupSelect01">
-                    Options
-                  </CInputGroupText> */}
                   <CFormSelect id="inputGroupSelect01"
                     value={manager}
-                    onChange={(event)=> {console.log(this, event)}}
+                    onChange={(e)=> {setResult(e.currentTarget.value)}}
                   >
                     <option>방문 예정</option>
                     <option>계약</option>
@@ -170,7 +182,8 @@ const ScheduleInfo = (props:any) => {
                     <option>무관심</option>
                   </CFormSelect>
 
-              </CInputGroup>            </CForm>
+              </CInputGroup>
+            </CForm>
           </CModalBody>
           <CModalFooter>
             <CButton color="secondary" onClick={onModalClose}>
@@ -180,6 +193,12 @@ const ScheduleInfo = (props:any) => {
               <CButton color="primary" onSubmit={onScheduleSubmit}>저장</CButton>
             :null}
           </CModalFooter>
+        </CModal>
+
+        <CModal visible={addressSoftModal} onClose={onAddressModalClose}>
+          <CModalBody>
+            <DaumPostcodeEmbed onComplete={handleAddress} />
+          </CModalBody>
         </CModal>
       </LocalizationProvider>
     </>

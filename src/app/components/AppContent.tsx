@@ -13,7 +13,13 @@ const AppContent = () => {
 
   const Component = ()=> {
     const defaultRoute: route = {path: currentLocation, element: ()=><div>존재하지 않는 컴포넌트입니다.</div>};
-    const targetRoute:route = routes.find((target)=> currentLocation === target.path) || defaultRoute;
+    // console.log(currentLocation, )
+    const targetRoute:route = routes.find((target)=> {
+      console.log(currentLocation, target.path)
+      return target.exact ?
+        currentLocation === target.path : 
+        currentLocation.indexOf(target.path) > -1;
+    }) || defaultRoute;
     const Route:LazyExoticComponent<() => React.JSX.Element> | React.JSX.ElementType = targetRoute.element;
     return <Route></Route>;
   }
@@ -21,23 +27,7 @@ const AppContent = () => {
   return (
     <CContainer className="">
       <Suspense fallback={<CSpinner color="primary" />}>
-        {<Component />}
-        {/* <Routes>
-          {routes.map((route, idx) => {
-            return (
-              route.element && (
-                <Route
-                  key={idx}
-                  path={route.path}
-                  // exact={route.exact}
-                  // name={route.name}
-                  element={<route.element />}
-                />
-              )
-            )
-          })}
-          <Route path="/" element={<Navigate to="ScheduleList" replace />} />
-        </Routes> */}
+        <Component />
       </Suspense>
     </CContainer>
   )

@@ -20,13 +20,10 @@ import {
   CInputGroupText,
   CRow,
 } from '@coreui/react'
-import CIcon from '@coreui/icons-react'
-import { cilLockLocked, cilUser } from '@coreui/icons'
-import { debug } from "console";
 import ScheduleInfo from "./ScheduleInfo";
 import { apiRequest } from "app/api/apiRequest";
-import dayjs from "dayjs";
 import { CalendarApi } from "@fullcalendar/core/index.js";
+import { usePathname } from "next/navigation";
 
 interface schedule {
   id: string;
@@ -80,6 +77,10 @@ export const dateToForm = (date:Date, isEmptyHour?: boolean)=> {
 
 let _modal: boolean = false;
 const ScheduleList = () => {
+  let location = usePathname();
+  let idMatch = location.match(/Schedule(?:List|Table)\/(\d+)/);
+  let id = idMatch ? parseInt(idMatch[1]) : undefined;
+
   let doubleClick: Date | boolean = false;
   let [ events, setEvents ] = useState<Array<any>>();
   let [ schedule, setSchedule ] = useState({});
@@ -97,7 +98,6 @@ const ScheduleList = () => {
   const onDateClick = (event: any)=> {
     if(doubleClick && doubleClick === event.date.toISOString()) {
       doubleClick = false;
-      console.log('doubleClick', dateToForm(event.date, true));
       setSchedule({
         date: dateToForm(event.date, true)
       });
@@ -123,7 +123,6 @@ const ScheduleList = () => {
 
   let calendarTool: CalendarApi = (calendarRef.current as any)?.calendar;
   const onCalendarButton = (e: MouseEvent)=> {
-    console.log('이전');
     let buttonName: 'prev'|'next' = (e.currentTarget as HTMLElement).title as 'prev'|'next';
     calendarTool[buttonName]();
     calendarTool && setRange({
@@ -144,26 +143,43 @@ const ScheduleList = () => {
         to: calendarTool.view.activeEnd as Date,
       })
     }
-  
+    let prms = [];
     if(range.from.getTime()) {
+      if(id) {
+        prms.push(new Promise((resolve, reject)=> {
+          apiRequest('get', 'schedule/'+id).then((res)=> {
+            let {code, schedule} = res;
+            if(code !== 0) {
+              alert(JSON.stringify(res));
+              return;
+            }
+      
+            setSchedule(schedule);
+            _modal = true;setModal(true);
+          }).then(resolve);
+        }));
+      }
       let request = {
         from: dateToForm(range.from, true).replace(' 14:0', ''),
         to: dateToForm(range.to, true).replace(' 14:0', ''),
       }
-      apiRequest('get', 'schedule', request).then((res)=> {
-        let {code, scheduleList} = res;
-        if(code !== 0) {
-          alert(JSON.stringify(res));
-          return;
-        }
-  
-        console.log('schedule delivery', scheduleList);
-        setEvents(scheduleList);
-      });
+      prms.push(new Promise((resolve, reject)=> {
+        apiRequest('get', 'schedule', request).then((res)=> {
+          let {code, scheduleList} = res;
+          if(code !== 0) {
+            alert(JSON.stringify(res));
+            return;
+          }
+    
+          setEvents(scheduleList);
+        }).then(resolve);
+      }));
     }
+    prms.reduce((prevPrms, current) => {
+      return prevPrms.then(()=>current);
+    }, Promise.resolve())
   }, [range]);
 
-  console.log(range, events);
   return (
     <>
       <CCard className="mb-4">
@@ -196,7 +212,7 @@ const ScheduleList = () => {
               }}
               navLinks={false}
               titleRangeSeparator="~"
-              eventChange={(evt)=>console.log(evt)}
+              // eventChange={(evt)=>console.log(evt)}
               customButtons={{
                 postUser: {
                   text: '일정등록',

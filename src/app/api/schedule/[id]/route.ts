@@ -2,13 +2,14 @@ import { PrismaClient } from '@prisma/client';
 import { userInfo } from 'auth';
 import { RequestBody, ResponseBody, sessionHandler } from 'app/api/common';
 
-export const GET = sessionHandler(async (prisma: PrismaClient, user: userInfo, body: RequestBody)=> {
-  // console.log('get body: ', user, body);
-  const { from, to } = body as any;
-  // console.log(from, to);
-  // if (user.role === 'TM') {
-    
-  // }
+type Params = {
+  id: string,
+}
+
+export const GET = sessionHandler(async (prisma: PrismaClient, user: userInfo, body: RequestBody, context: { params: Params} )=> {
+  let { id } = context.params;
+  let idAsNumber = parseInt(id);
+
   const schedules = await prisma.user.findUnique({
     where: {
       email: user.email
@@ -16,15 +17,11 @@ export const GET = sessionHandler(async (prisma: PrismaClient, user: userInfo, b
     select: {
       Schedule: {
         where: {
-          date: {
-            gt: new Date(from),
-            lt: new Date(to),
-          }
+          id: idAsNumber,
         },
         select: {
-          id: true,
           address: true,
-          date: true, 
+          date: true,
           note: true,
           result: true,
           manager: {
@@ -38,15 +35,11 @@ export const GET = sessionHandler(async (prisma: PrismaClient, user: userInfo, b
       },
       WorkingSchedule: {
         where: {
-          date: {
-            gt: new Date(from),
-            lt: new Date(to),
-          }
+          id: idAsNumber,
         },
         select: {
-          id: true,
           address: true,
-          date: true, 
+          date: true,
           note: true,
           result: true,
           manager: {
@@ -62,9 +55,18 @@ export const GET = sessionHandler(async (prisma: PrismaClient, user: userInfo, b
   });
   
   let scheduleList = schedules?.Schedule.concat(schedules.WorkingSchedule)
-  
-  return {
-    code: 0,
-    scheduleList,
+
+  if(!scheduleList || scheduleList.length === 0) {
+    return {
+      code: 1404,
+      message: "No schedule",
+    }
+  } else {
+    let schedule = scheduleList[0];
+    return {
+      code: 0,
+      schedule,
+    }
   }
+  
 });

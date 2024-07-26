@@ -1,8 +1,13 @@
 import { PrismaClient, Prisma } from '@prisma/client';
 import { auth } from 'auth';
-import { NextApiRequest, NextApiResponse } from 'next';
 import { NextRequest, NextResponse } from 'next/server';
-import prisma from 'utils/prismaConfig';
+
+const env: string = process.env.NODE_ENV || 'development';
+const prismaConfig: Prisma.PrismaClientOptions = {
+  log: env === 'development' ? ['query', 'info', 'warn', 'error'] : undefined
+}
+const prisma = new PrismaClient(prismaConfig);
+
 
 export interface ResponseBody {
   code: number,
@@ -11,7 +16,7 @@ export interface ResponseBody {
 export interface RequestBody {}
 
 export const sessionHandler = (customFunction: Function)=> {
-  return async(req: NextRequest, res: NextApiResponse)=>{
+  return async(req: NextRequest, context: { params: any })=>{
     const session = await auth();
     if(session) {
       let data: any;
@@ -23,7 +28,6 @@ export const sessionHandler = (customFunction: Function)=> {
           data = req.text();
         }
       } else if(req.method === 'GET') {
-        console.log(req.url);
         data = {};
         let query = new URL(req.url).searchParams;
         query.forEach((value, key)=> {
@@ -44,7 +48,7 @@ export const sessionHandler = (customFunction: Function)=> {
       let status:number = 200;
       
       try {
-        responseData = await customFunction(prisma, session.user, data);
+        responseData = await customFunction(prisma, session.user, data, context);
         console.log('response success', responseData);
       } catch(e: unknown) {
         console.log('catch in responseData', e);
