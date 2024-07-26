@@ -8,11 +8,15 @@ const nextConfig = {
     async rewrites() {
         return [
             {
-                source: "/(Dashboard|UserList|Calendar|api\/test|ScheduleList)",
+                source: "/(Dashboard|UserList|Calendar|api\/test|ScheduleList|ScheduleTable)",
                 destination: "/",
             },
             {
                 source: "/ScheduleList/:id",
+                destination: "/",
+            },
+            {
+                source: "/ScheduleTable/:id",
                 destination: "/",
             }
         ]

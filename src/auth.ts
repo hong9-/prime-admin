@@ -1,13 +1,10 @@
 import NextAuth, { CredentialsSignin, User, type DefaultSession } from "next-auth"
+import authConfig from "auth.config"
 import Credentials from "next-auth/providers/credentials"
 import { saltAndHash, validatePassword } from "./utils/password"
-// import Error from "next/error";
-import config from "../config/config.json"
 import { PrismaAdapter } from "@auth/prisma-adapter"
 import { validateDate } from "@mui/x-date-pickers/internals"
-import prisma from "utils/prismaConfig"
-
-console.log('auth 실행');
+import { Prisma, PrismaClient } from "@prisma/client"
 
 class CredentialError extends CredentialsSignin {
   code = "아이디 또는 패스워드에 문제가 있습니다."
@@ -44,14 +41,6 @@ export interface userInfo {
   workers?: Array<Worker>,
 }
 
-const getUserFromDb = async(email:string) => {
-  return await prisma.user.findUnique({
-    where: {
-      email
-    }
-  });
-}
-
 declare module "next-auth" {
   /**
    * Returned by `auth`, `useSession`, `getSession` and received as a prop on the `SessionProvider` React Context
@@ -71,7 +60,23 @@ declare module "next-auth" {
   }
 }
  
+const env: string = process.env.NODE_ENV || 'development';
+const prismaConfig: Prisma.PrismaClientOptions = {
+  log: env === 'development' ? ['query', 'info', 'warn', 'error'] : undefined
+}
+const prisma = new PrismaClient(prismaConfig);
+
+const getUserFromDb = async(email:string) => {
+  return await prisma.user.findUnique({
+    where: {
+      email
+    }
+  });
+}
+
 export const { handlers, signIn, signOut, auth } = NextAuth({
+  adapter: PrismaAdapter(prisma),
+  ...authConfig,
   callbacks: {
     async session({ session, token, user }) {
       console.log('session 갱신 시, token 갱신 시');
@@ -117,15 +122,6 @@ export const { handlers, signIn, signOut, auth } = NextAuth({
       }
     },
   },
-  session: {
-    strategy: "jwt"
-  },
-  trustHost: true,
-  pages: {
-    signIn: "/Login",
-  },
-  adapter: PrismaAdapter(prisma),
-  secret: "AUTH_SECRET",
   providers: [
     Credentials({
       credentials: {
@@ -150,7 +146,6 @@ export const { handlers, signIn, signOut, auth } = NextAuth({
         }
         console.log('User: ', user);
 
-        // prisma.account
         let { hash } = await prisma.user.findUnique({
           where: {
             email: user.email

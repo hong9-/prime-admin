@@ -1014,9 +1014,14 @@ async function main() {
           }
         },
         viewer: {
-          connect: {
-            email: creatorId
-          }
+          connect: [
+            {
+              email: creatorId
+            },
+            {
+              email: "admin001"
+            },
+          ]
         }
       }
     }).then((e)=> {
