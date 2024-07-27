@@ -8,10 +8,10 @@ import { useSession } from "next-auth/react";
 import { AppProps } from "next/app";
 import StoreProvider from "app/StoreProvider";
 import { useRouter } from "next/navigation";
-import { Suspense } from "react";
 import { CSpinner } from "@coreui/react";
 import Login from "./Login/page";
 import CreatePassword from "./CreatePassword/page";
+import Loading from "./components/Loading";
 
 const start = Date.now();
 
@@ -24,13 +24,7 @@ export default function Home() {
   if (sessionData === undefined || status === 'loading') {
     console.log('session loading...', status, Date.now() - start);
     return (
-      <Suspense
-        fallback={
-          <div className="pt-3 session-loading text-center">
-            <CSpinner color="primary" variant="grow" />
-          </div>
-      }>
-      </Suspense>
+      <Loading>{null}</Loading>
     )
   } else if (sessionData === null) {
     console.log('session null, redirect to /Login', status, Date.now() - start);

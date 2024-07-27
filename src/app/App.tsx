@@ -1,8 +1,10 @@
 "use client"
-import React, { Suspense, useEffect } from 'react'
+import React, { useEffect } from 'react'
 import { CSpinner, useColorModes } from '@coreui/react'
 import './scss/style.scss'
 import { useAppSelector } from 'app/hooks'
+import Loading from './components/Loading'
+
 // Containers
 const DefaultLayout = React.lazy(() => import('./layout/DefaultLayout'))
 
@@ -34,21 +36,9 @@ const App = () => {
   }, []) // eslint-disable-line react-hooks/exhaustive-deps
 
   return (
-      <Suspense
-        fallback={
-          <div className="pt-3 page-loading text-center">
-            <CSpinner color="primary" variant="grow" />
-          </div>
-        }
-      >
-        <DefaultLayout />
-        {/* <Routes>
-          <Route path='/Login' element={<Login />}/>
-          <Route path='/CreatePassword' element={<CreatePassword />}/>
-          <Route path='*' element={<DefaultLayout />}/>
-          <Route path="*" name="Home" element={<DefaultLayout />}/>
-        </Routes> */}
-      </Suspense>
+    <Loading>
+      <DefaultLayout />
+    </Loading>
   )
 }
 

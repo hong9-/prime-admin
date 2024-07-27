@@ -4,7 +4,7 @@ import "core-js";
 import FullCalendar from "@fullcalendar/react";
 import dayGridPlugin from '@fullcalendar/daygrid'
 import interactionPlugin from "@fullcalendar/interaction"
-import React, { LegacyRef, Suspense, useEffect, useRef, useState } from 'react'
+import React, { useEffect, useRef, useState } from 'react'
 import {
   CButton,
   CCard,
@@ -187,58 +187,51 @@ const ScheduleList = () => {
           <strong>직원 관리</strong>
         </CCardHeader>
         <CCardBody>
-          <Suspense
-            fallback={
-              <div className="pt-3 session-loading text-center">
-                <CSpinner color="primary" variant="grow" />
-              </div>
-            }>
-            <FullCalendar
-              ref={calendarRef}
-              height={"100vh"}
-              // themeSystem="bootstrap5"
-              plugins={[
-                dayGridPlugin,
-                interactionPlugin,
-              ]}
-              
-              weekends={true}
-              events={events}
-              dateClick={onDateClick}
-              eventClick={onEventClick}
-              titleFormat={{
-                month: 'numeric',
-                day: 'numeric',
-              }}
-              navLinks={false}
-              titleRangeSeparator="~"
-              // eventChange={(evt)=>console.log(evt)}
-              customButtons={{
-                postUser: {
-                  text: '일정등록',
-                  click: ()=>{
-                    _modal = true;
-                    setModal(true);
-                  },
+          <FullCalendar
+            ref={calendarRef}
+            height={"100vh"}
+            // themeSystem="bootstrap5"
+            plugins={[
+              dayGridPlugin,
+              interactionPlugin,
+            ]}
+            
+            weekends={true}
+            events={events}
+            dateClick={onDateClick}
+            eventClick={onEventClick}
+            titleFormat={{
+              month: 'numeric',
+              day: 'numeric',
+            }}
+            navLinks={false}
+            titleRangeSeparator="~"
+            // eventChange={(evt)=>console.log(evt)}
+            customButtons={{
+              postUser: {
+                text: '일정등록',
+                click: ()=>{
+                  _modal = true;
+                  setModal(true);
                 },
-                prev: {
-                  // hint: '이전 달 보기',
-                  text: 'prev',
-                  click: onCalendarButton,
-                },
-                next: {
-                  // hint: '다음 달 보기',
-                  text: 'next',
-                  click: onCalendarButton,
-                }
-              }}
-              headerToolbar={{
-                left: 'title',
-                center: '',
-                right: 'postUser today prev,next',
-              }}
-            />
-          </Suspense>
+              },
+              prev: {
+                // hint: '이전 달 보기',
+                text: 'prev',
+                click: onCalendarButton,
+              },
+              next: {
+                // hint: '다음 달 보기',
+                text: 'next',
+                click: onCalendarButton,
+              }
+            }}
+            headerToolbar={{
+              left: 'title',
+              center: '',
+              right: 'postUser today prev,next',
+            }}
+          />
         </CCardBody>
       </CCard>
 
