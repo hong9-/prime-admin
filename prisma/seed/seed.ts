@@ -1,4 +1,4 @@
-import { PrismaClient } from '@prisma/client'
+import { PrismaClient, ScheduleResult } from '@prisma/client'
 import { getRandomValues } from 'crypto';
 
 const prisma = new PrismaClient();
@@ -987,15 +987,20 @@ async function main() {
     address: '경상남도 창원시 진해구 죽곡동 453-4',
     title: '대동식당',
   }];
-  const resultList = ['계약', '보류', '무관심'];
+  const resultList = [
+    ScheduleResult.NOTYET,
+    ScheduleResult.NOTINTERESTED,
+    ScheduleResult.HOLD,
+    ScheduleResult.CONTRACT,
+  ];
 
   const schedules = await Promise.all(scheduleList.map(async(schedule,i)=>{
     let date = new Date(defaultTime + (random(87840) * 60 * 1000));
     // let address = scheduleList[random(7)];
     let {address, title} = schedule;
-    let result = '방문 예정';
+    let result: ScheduleResult = ScheduleResult.NOTYET;
     if (date.getTime() < Date.now()) {
-      result = resultList[random(3)];
+      result = ScheduleResult[resultList[random(3)+1]];
     }
     
     const idRandom = random(3);

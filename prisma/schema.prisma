@@ -59,7 +59,7 @@ model Schedule {
   address     String
   creatorId   String
   note        String?
-  result      String
+  result      ScheduleResult @default(NOTYET)
 
   manager     User[]  @relation("WorkerSchedule") // 스케줄을 이행하고 결과를 반영하는 사람.
   viewer      User[]                              // 스케줄을 관찰하고 결과를 지켜보는 사람 목록.
@@ -132,4 +132,11 @@ enum Role {
   ADMIN
   TM
   SALES
+}
+
+enum ScheduleResult {
+  NOTYET
+  CONTRACT
+  HOLD
+  NOTINTERESTED
 }

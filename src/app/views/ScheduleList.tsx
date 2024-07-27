@@ -24,51 +24,14 @@ import ScheduleInfo from "./ScheduleInfo";
 import { apiRequest } from "app/api/apiRequest";
 import { CalendarApi } from "@fullcalendar/core/index.js";
 import { usePathname } from "next/navigation";
-
-interface schedule {
-  id: string;
-  title: string;
-  color: string;
-  date: string;
-}
-
-const exampleSchedule = [
-  {
-    id: 'abcde',
-    title: 'hi',
-    date: '2024-06-30 08:30',
-    color: 'red',
-    manager: '김대리',
-    address: '서울시 중랑구 면목동',
-  }, {
-    id: 'abcde',
-    title: 'hi',
-    date: '2024-07-11 12:00',
-    color: '#0000ff',
-    manager: '이대리',
-    address: '서울시 중랑구 망우동',
-  }, {
-    id: 'fghij',
-    title: '서울시 광진구 중곡동',
-    date: '2024-07-11 09:00',
-    color: 'green',
-    manager: '박과장',
-    address: '서울시 광진구 중곡동',
-  }, {
-    id: 'qwert',
-    title: 'hello',
-    date: '2024-07-11 15:30',
-    color: 'cyan',
-    manager: '박과장',
-    address: '서울시 동대문구 장안동',
-  },
-];
-
-export const dateToForm = (date:Date, isEmptyHour?: boolean)=> {
-  let hour:number = isEmptyHour ? 14 : date.getHours();
-  let minute:number = isEmptyHour ? 0 : date.getMinutes();
-  return `${date.getFullYear()}-${date.getMonth()+1}-${date.getDate()} ${hour}:${minute}`;
-}
+import {
+  schedule,
+  colorSet,
+  dateToForm,
+  getSchedule,
+  getScheduleList,
+  scheduleToDisplay,
+} from "app/scheduleUtil"
 
 // 담당자 받아오기(서버)
 // 달력 전체 날짜 받아오기(클라이언트)
@@ -88,12 +51,6 @@ const ScheduleList = () => {
   let [ modal, setModal ] = useState(_modal);
   let calendarRef = useRef(null);
   let [ range, setRange ] = useState({from: new Date(0), to: new Date(0)})
-  // let sample = new Date();
-  // let today = new Date(sample.getFullYear()+'/'+(sample.getMonth()+1)+'/'+sample.getDate());
-
-  // today.setDate(1);
-  // today.getDay()
-  // let 
 
   const onDateClick = (event: any)=> {
     if(doubleClick && doubleClick === event.date.toISOString()) {
@@ -115,10 +72,14 @@ const ScheduleList = () => {
   const onEventClick = (scheduleClick: any)=> {
     let {event} = scheduleClick;
     if(events) {
-      let schedule: any = events.find((_schedule:any)=> _schedule.id === event.id);
-      setSchedule(schedule);
+      let schedule: any = events.find((_schedule:any)=> _schedule.id == event.id);
+      setSchedule(scheduleToDisplay(schedule));
       _modal = true;setModal(true);
     }
+  }
+
+  const onEventSubmit = (schedule:schedule)=> {
+    console.log(schedule);
   }
 
   let calendarTool: CalendarApi = (calendarRef.current as any)?.calendar;
@@ -133,9 +94,6 @@ const ScheduleList = () => {
   }
 
   useEffect(()=> {
-    if(!events) {
-      setEvents(exampleSchedule);
-    }
     if(!range.from.getTime() && calendarRef.current) {
       calendarTool = (calendarRef.current as any)?.calendar;
       setRange({
@@ -146,33 +104,17 @@ const ScheduleList = () => {
     let prms = [];
     if(range.from.getTime()) {
       if(id) {
-        prms.push(new Promise((resolve, reject)=> {
-          apiRequest('get', 'schedule/'+id).then((res)=> {
-            let {code, schedule} = res;
-            if(code !== 0) {
-              alert(JSON.stringify(res));
-              return;
-            }
-      
-            setSchedule(schedule);
-            _modal = true;setModal(true);
-          }).then(resolve);
-        }));
+        prms.push(getSchedule(id));
       }
-      let request = {
-        from: dateToForm(range.from, true).replace(' 14:0', ''),
-        to: dateToForm(range.to, true).replace(' 14:0', ''),
-      }
-      prms.push(new Promise((resolve, reject)=> {
-        apiRequest('get', 'schedule', request).then((res)=> {
-          let {code, scheduleList} = res;
-          if(code !== 0) {
-            alert(JSON.stringify(res));
-            return;
-          }
-    
-          setEvents(scheduleList);
-        }).then(resolve);
+
+      prms.push(getScheduleList(
+        dateToForm(range.from, true).replace(' 14:0', ''),
+        dateToForm(range.to, true).replace(' 14:0', ''),
+      ).then((scheduleList: Array<schedule>)=> {
+        scheduleList.map((schedule: schedule)=> {
+          schedule.color = colorSet[schedule.result];
+          schedule.title = schedule.address;
+        })
       }));
     }
     prms.reduce((prevPrms, current) => {
@@ -195,7 +137,7 @@ const ScheduleList = () => {
               dayGridPlugin,
               interactionPlugin,
             ]}
-            
+            eventDisplay="block"
             weekends={true}
             events={events}
             dateClick={onDateClick}
@@ -229,7 +171,7 @@ const ScheduleList = () => {
             headerToolbar={{
               left: 'title',
               center: '',
-              right: 'postUser today prev,next',
+              right: 'postUser prev,next',
             }}
           />
         </CCardBody>
@@ -245,6 +187,7 @@ const ScheduleList = () => {
       <ScheduleInfo
         visible={modal}
         schedule={schedule}
+        onSubmit={onEventSubmit}
         onClose={()=>{_modal = false;setModal(false);setSchedule({})}}
       />
     </>

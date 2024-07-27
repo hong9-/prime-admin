@@ -31,15 +31,16 @@ import {
 import { AdapterDayjs } from '@mui/x-date-pickers/AdapterDayjs';
 import dayjs from 'dayjs'
 import { UserInfo, state } from 'app/store'
-import { dateToForm } from './ScheduleList'
 import { useAppSelector } from 'app/hooks'
 import { useSession } from 'next-auth/react'
 import { useRouter } from 'next/navigation'
 
 import { Address, DaumPostcodeEmbed } from "react-daum-postcode";
+import { userInfo } from 'auth'
+import { dateToForm, resultType, resultList, resultMap } from 'app/scheduleUtil'
 
 const ScheduleInfo = (props:any) => {
-  const { visible, onClose, onSubmit, schedule } = props;
+  const { visible, onClose, onSubmit, onRemove, schedule } = props;
   const { userInfo } = useAppSelector((state:state)=>state) || {userId: '', name: '', role: '', sales: []};
   const [ currentSchedule, setCurrentSchedule ] = useState();
   let test = dateToForm(new Date(), true);
@@ -47,11 +48,11 @@ const ScheduleInfo = (props:any) => {
   const [ address, setAddress ] = useState('');
   const [ date, setDate ] = useState(test);
   const [ manager, setManager ] = useState('담당자 선택');
-  const [ result, setResult ] = useState('방문 예정');
+  const [ result, setResult ] = useState('' as resultType);
   const [ addressSoftModal, setAddressSoftModal ] = useState(false)
-  const { workers } = useSession().data as any;
+  const { workers } = useSession().data?.user as any;
   
-  console.log(userInfo);
+  console.log(workers);
   let currentSales: Array<UserInfo> = workers || [{
     email: 'abcde',
     name: '박과장',
@@ -98,13 +99,16 @@ const ScheduleInfo = (props:any) => {
     setManager(schedule ? schedule.manager: "");
   }
 
+  const onScheduleRemove = ()=> {
+
+  }
   const handleAddress = (_address: Address)=> {
     console.log(_address)
     onAddressModalClose();
     // setAddress(_address);
   }
 
-  const handleChange = (e)=> {
+  const handleChange = ()=> {
 
   }
   return (
@@ -137,12 +141,6 @@ const ScheduleInfo = (props:any) => {
                 <CInputGroupText>
                   <CIcon icon={cilCalendar} />
                 </CInputGroupText>
-                {/* <CFormInput
-                  type="date"
-                  placeholder="방문날짜"
-                  floatingLabel="방문날짜"
-                  // autoComplete="visit-date"
-                /> */}
                 <DateTimePicker
                   // label="방문날짜"
                   format="YYYY-MM-DD HH:mm"
@@ -162,9 +160,12 @@ const ScheduleInfo = (props:any) => {
                     onChange={(e)=> {setManager(e.currentTarget.value)}}
                   >
                     <option>담당자 선택</option>
-                    {currentSales.map((_man)=>(
-                      <option key={_man.email}>{_man.name}</option>
-                    ))}
+                    {/* {currentSales.map((_man)=>(
+                      <option key={_man.email} value={_man.email}>{_man.name}</option>
+                    ))} */}
+                    {workers ? workers.map((worker: userInfo)=>
+                      <option key={worker.email} value={worker.email} selected={schedule.manager === worker.name}>{worker.name}</option>
+                    ) : null}
                   </CFormSelect>
 
               </CInputGroup>
@@ -173,25 +174,27 @@ const ScheduleInfo = (props:any) => {
                   <CIcon icon={cilCheck} />
                 </CInputGroupText>
                   <CFormSelect id="inputGroupSelect01"
-                    value={manager}
-                    onChange={(e)=> {setResult(e.currentTarget.value)}}
+                    value={resultMap[result]}
+                    onChange={(e)=> {setResult(e.currentTarget.value as resultType)}}
                   >
-                    <option>방문 예정</option>
-                    <option>계약</option>
-                    <option>보류</option>
-                    <option>무관심</option>
+                    {resultList.map((result)=>
+                      <option key={result} value={result} selected={schedule.result === result}>{resultMap[result]}</option>
+                    )}
                   </CFormSelect>
 
               </CInputGroup>
             </CForm>
           </CModalBody>
           <CModalFooter>
+            {schedule ?
+              <CButton color="secondary" onClick={()=>onRemove(schedule.id)}>삭제</CButton>
+            :null}
+            <CButton color="primary" onClick={()=> {
+              onSubmit({address, date, result, manager});
+            }}>{schedule ? "저장" : "생성"}</CButton>
             <CButton color="secondary" onClick={onModalClose}>
               닫기
             </CButton>
-            {onSubmit ?
-              <CButton color="primary" onSubmit={onScheduleSubmit}>저장</CButton>
-            :null}
           </CModalFooter>
         </CModal>
 
