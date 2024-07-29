@@ -58,8 +58,8 @@ const AppHeader = () => {
         >
           <CIcon icon={cilMenu} size="lg" />
         </CHeaderToggler>
-        <CHeaderNav className="d-none d-md-flex">
-        <CNavItem>
+        {/* <CHeaderNav className="d-none d-md-flex">
+          <CNavItem>
             <Link className="nav-link" href="/Login">
               로그인
             </Link>
@@ -69,7 +69,7 @@ const AppHeader = () => {
               패스워드 생성
             </Link>
           </CNavItem>
-        </CHeaderNav>
+        </CHeaderNav> */}
         <CHeaderNav className="ms-auto">
           <AppNotificationDropDown />
           {/* <CNavItem>

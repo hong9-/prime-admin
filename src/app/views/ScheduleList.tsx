@@ -19,6 +19,7 @@ import {
   CInputGroup,
   CInputGroupText,
   CRow,
+  CCardFooter,
 } from '@coreui/react'
 import ScheduleInfo from "./ScheduleInfo";
 import { apiRequest } from "app/api/apiRequest";
@@ -51,18 +52,18 @@ const ScheduleList = () => {
   let [ modal, setModal ] = useState(_modal);
   let calendarRef = useRef(null);
   let [ range, setRange ] = useState({from: new Date(0), to: new Date(0)})
+  let [ needRefresh, setNeedRefresh ] = useState(false);
 
   const onDateClick = (event: any)=> {
     if(doubleClick && doubleClick === event.date.toISOString()) {
       doubleClick = false;
       setSchedule({
-        date: dateToForm(event.date, true)
+        date: dateToForm(event.date)
       });
       _modal = true;
       setModal(true);
     } else {
       doubleClick = event.date.toISOString();
-      // console.log(doubleClick);
       setTimeout(()=> {
         doubleClick = false;
       }, 300)
@@ -80,6 +81,13 @@ const ScheduleList = () => {
 
   const onEventSubmit = (schedule:schedule)=> {
     console.log(schedule);
+    apiRequest('post', 'schedule/create', schedule).then(({code, message})=> {
+      if(code) return alert('생성 실패\n\n' + JSON.stringify(message));
+
+      _modal = false;setModal(false);
+      // setNeedRefresh(!needRefresh);
+      // setRange(range);
+    })
   }
 
   let calendarTool: CalendarApi = (calendarRef.current as any)?.calendar;
@@ -104,17 +112,21 @@ const ScheduleList = () => {
     let prms = [];
     if(range.from.getTime()) {
       if(id) {
-        prms.push(getSchedule(id));
+        prms.push(getSchedule(id).then(({schedule})=> {
+          setSchedule(scheduleToDisplay(schedule));
+        }));
       }
 
-      prms.push(getScheduleList(
-        dateToForm(range.from, true).replace(' 14:0', ''),
-        dateToForm(range.to, true).replace(' 14:0', ''),
-      ).then((scheduleList: Array<schedule>)=> {
-        scheduleList.map((schedule: schedule)=> {
+      prms.push(getScheduleList({
+        from: dateToForm(range.from, dateToForm.WITHHOUR),
+        to: dateToForm(range.to, dateToForm.WITHHOUR),
+      }).then((result)=> {
+        const scheduleList: Array<schedule> = result?.scheduleList;
+        setEvents(scheduleList.map((schedule: schedule)=> {
           schedule.color = colorSet[schedule.result];
           schedule.title = schedule.address;
-        })
+          return schedule;
+        }));
       }));
     }
     prms.reduce((prevPrms, current) => {
@@ -176,13 +188,6 @@ const ScheduleList = () => {
           />
         </CCardBody>
       </CCard>
-
-      <div className="align-right">
-        <CButton
-          color="primary"
-          onClick={()=>{_modal = true;setModal(true);}
-        }>일정 등록</CButton>
-      </div>
 
       <ScheduleInfo
         visible={modal}

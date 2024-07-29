@@ -1,4 +1,3 @@
-import { AssertionError } from "assert";
 
 export interface data {
   user?: string

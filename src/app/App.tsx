@@ -38,8 +38,11 @@ const App = () => {
   return (
     <Loading>
       <DefaultLayout />
+      {/* <div className="pt-3 ajax-loading text-center">
+        <CSpinner color="primary" variant="grow" />
+      </div> */}
     </Loading>
-  )
+)
 }
 
 export default App

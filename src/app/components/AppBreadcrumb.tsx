@@ -4,12 +4,14 @@ import routes from '../routes'
 
 import { CBreadcrumb, CBreadcrumbItem } from '@coreui/react'
 import { usePathname } from 'next/navigation'
+import Link from 'next/link'
 
 const AppBreadcrumb = () => {
   const currentLocation = usePathname();
   
   const getRouteName = (pathname: string, routes: Array<any>) => {
-    const currentRoute = routes.find((route) => route.path === pathname)
+    const currentRoute = routes.find((route) =>
+      route.exact ? route.path === pathname : pathname.indexOf(route.path) > -1)
     return currentRoute ? currentRoute.name : false
   }
 
@@ -26,6 +28,7 @@ const AppBreadcrumb = () => {
         })
       return currentPathname
     })
+    console.log(breadcrumbs);
     return breadcrumbs
   }
 
@@ -33,14 +36,32 @@ const AppBreadcrumb = () => {
 
   return (
     <CBreadcrumb className="my-0">
-      <CBreadcrumbItem href="/">Home</CBreadcrumbItem>
+      {/* <Link href="/"><CBreadcrumbItem>Home</CBreadcrumbItem></Link>
       {breadcrumbs.map((breadcrumb, index) => {
         return (
+          <Link href={!breadcrumb.active || breadcrumb.pathname }>
           <CBreadcrumbItem
             {...(breadcrumb.active ? { active: true } : { href: breadcrumb.pathname })}
             key={index}
           >
             {breadcrumb.name}
+          </CBreadcrumbItem>
+          </Link>
+        )
+      })} */}
+      <CBreadcrumbItem><Link href="/">Home</Link></CBreadcrumbItem>
+      {breadcrumbs.map((breadcrumb, index) => {
+        return (
+          <CBreadcrumbItem
+            {...(breadcrumb.active && { active: true })}
+            key={index}
+          >
+            {breadcrumb.active
+              ?
+                breadcrumb.name
+              :
+                <Link href={breadcrumb.pathname}>{breadcrumb.name}</Link>
+            }
           </CBreadcrumbItem>
         )
       })}

@@ -79,7 +79,7 @@ export const { handlers, signIn, signOut, auth } = NextAuth({
   ...authConfig,
   callbacks: {
     async session({ session, token, user }) {
-      console.log('session 갱신 시, token 갱신 시');
+      console.log('get session: ', session.user);
       let _user;
       if(!user) {
         try {
@@ -139,9 +139,9 @@ export const { handlers, signIn, signOut, auth } = NextAuth({
 
         if(!user) {
           console.log('No user');
-          const start = Date.now();
-          const pwHash = await saltAndHash(credentials.password);
-          console.log(pwHash, Date.now() - start);
+          // const start = Date.now();
+          // const pwHash = await saltAndHash(credentials.password);
+          // console.log(pwHash, Date.now() - start);
           return user;
         }
         console.log('User: ', user);
@@ -157,14 +157,14 @@ export const { handlers, signIn, signOut, auth } = NextAuth({
 
         console.log('hash : ', hash);
 
-        if(user.needPasswordReset) {
-          console.log("Need initialize password!!!");
-          return user;
-        }
-
         console.log('start validating!!!!!!!!!!!!!!!!!!!!\n\t', hash)
         if(await validatePassword(credentials.password, hash)) {
-          console.log('validating true')
+          console.log(`user.email: ${user.email} validating true`)
+          if(user.needPasswordReset) {
+            console.log("Need initialize password!!!");
+            return user;
+          }
+
           return user;
         }
         else return null;

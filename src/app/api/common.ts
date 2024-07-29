@@ -49,7 +49,7 @@ export const sessionHandler = (customFunction: Function)=> {
       
       try {
         responseData = await customFunction(prisma, session.user, data, context);
-        console.log('response success', responseData);
+        // console.log('response success', responseData);
       } catch(e: unknown) {
         console.log('catch in responseData', e);
         responseData = e as ResponseBody;

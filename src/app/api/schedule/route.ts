@@ -1,70 +1,152 @@
-import { PrismaClient } from '@prisma/client';
+import { PrismaClient, Prisma, Role, ScheduleResult } from '@prisma/client';
 import { userInfo } from 'auth';
 import { RequestBody, ResponseBody, sessionHandler } from 'app/api/common';
+import { filter, orderDirection, orderItem } from 'app/scheduleUtil';
 
-export const GET = sessionHandler(async (prisma: PrismaClient, user: userInfo, body: RequestBody)=> {
-  // console.log('get body: ', user, body);
-  const { from, to } = body as any;
-  // console.log(from, to);
-  // if (user.role === 'TM') {
-    
-  // }
-  const schedules = await prisma.user.findUnique({
-    where: {
-      email: user.email
+interface listWhere {
+  orderItem: 'id'|'address'|'date'|'manager'|'worker'|'result'|undefined,
+  orderDirection: 'asc'|'desc',
+  filter: filter,
+  currentAmount: number|undefined,
+  from: string,
+  to: string,
+}
+
+const tableItemMax = 10;
+
+export const POST = sessionHandler(async (prisma: PrismaClient, user: userInfo, body: RequestBody)=> {
+  const {
+    orderItem,
+    orderDirection,
+    filter,
+    currentAmount,
+    from,
+    to,
+  } = body as listWhere;
+  const { isAdmin } = body as any;
+
+  const defaultSelect: Prisma.ScheduleSelect = {
+    id: true,
+    address: true,
+    creatorId: true,
+    date: true,
+    result: true,
+    manager: {
+      select: {
+        name: true,
+        email: true,
+        role: true,
+      },
     },
-    select: {
-      Schedule: {
-        where: {
-          date: {
-            gt: new Date(from),
-            lt: new Date(to),
-          }
-        },
-        select: {
-          id: true,
-          address: true,
-          date: true, 
-          note: true,
-          result: true,
-          manager: {
-            select: {
-              name: true,
-              email: true,
-              role: true,
-            },
-          },
+    viewer: {
+      where: {
+        email: {
+          not: "admin001"
         },
       },
-      WorkingSchedule: {
-        where: {
-          date: {
-            gt: new Date(from),
-            lt: new Date(to),
+      select: {
+        name: true,
+        email: true,
+        role: true,
+      },
+    },
+  }
+  const defaultOrder: Prisma.ScheduleOrderByWithAggregationInput = {
+    id: undefined as orderDirection,
+    date: 'desc' as orderDirection,
+    result: undefined as orderDirection,
+    address: undefined as orderDirection,
+  };
+  if(orderItem && orderItem !== 'worker' && orderItem !== 'manager') {
+    for(let key in defaultOrder)
+      defaultOrder[key as orderItem] = undefined;
+    defaultOrder[orderItem] = orderDirection;
+  }
+  else if(orderItem) {
+
+  }
+
+  const userDefaultWhere: Prisma.ScheduleWhereInput = {
+    AND: [{
+      OR: [{
+        manager: {
+          some: {
+            email: user.email,
           }
         },
-        select: {
-          id: true,
-          address: true,
-          date: true, 
-          note: true,
-          result: true,
-          manager: {
-            select: {
-              name: true,
-              email: true,
-              role: true,
-            },
-          },
+      }, {
+        viewer: {
+          some: {
+            email: user.email,
+          }
         },
-      },
-    }
+      }]
+    }]
+  }
+  if(from && to) {
+    (userDefaultWhere.AND as Array<Prisma.ScheduleWhereInput>).push({
+      date: {
+        gt: new Date(from),
+        lt: new Date(to),
+      }
+    })
+  }
+
+  const total = await prisma.schedule.count({
+    where: userDefaultWhere
   });
+
+  if(filter) {
+    if (filter.manager)
+      filter.manager = {
+        some: {
+          email: filter.manager
+        }
+      };
+    if (filter.viewer)
+      filter.viewer = {
+        some: {
+          email: filter.viewer
+        }
+      };
+    (userDefaultWhere.AND as Array<Prisma.ScheduleWhereInput>).push(filter)
+    // userDefaultWhere.push(filter);
+    // for(let key in filter) {
+    // }
+  }
+
+  const pageMax = await prisma.schedule.count({
+    where: userDefaultWhere,
+    orderBy: defaultOrder,
+  })
+  const select = {
+    where: userDefaultWhere,
+    select: defaultSelect,
+    orderBy: defaultOrder,
+    take: from && to && !orderItem ? undefined : tableItemMax,
+    skip: from && to && !orderItem ? undefined : currentAmount,
+  }
+  console.log(select);
+  const schedules = await prisma.schedule.findMany(select)
   
-  let scheduleList = schedules?.Schedule.concat(schedules.WorkingSchedule)
-  
+  console.log(`total: ${total} founds.`);
+  // if(filterItem && filterItem !== 'worker' && filterItem !== 'manager')
+  //   defaultWhere[filterItem] = filterValue;
+  // else if(orderItem) {
+
+  // }
+    
+  // const scheduleList = await prisma.schedule.findMany({
+  //   select: defaultSelect,
+  //   orderBy: defaultOrder,
+  //   take: 10,
+  //   skip: currentAmount, 
+  // });
+  // console.log(scheduleList);
   return {
     code: 0,
-    scheduleList,
+    total,
+    pageMax,
+    scheduleList: schedules,
   }
 });

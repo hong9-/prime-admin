@@ -40,6 +40,8 @@ model User {
 
   managers          User[]      @relation("Managed")
   workers           User[]      @relation("Managed")
+
+  @@index([id, email])
 }
 
 model Notification {
@@ -51,6 +53,7 @@ model Notification {
   createdAt DateTime  @default(now())
 
   user      User      @relation(fields: [userId], references: [id])
+  @@index([createdAt])
 }
 
 model Schedule {
@@ -65,7 +68,7 @@ model Schedule {
   viewer      User[]                              // 스케줄을 관찰하고 결과를 지켜보는 사람 목록.
   // creator User @relation(fields: [creatorId], references: [id])
 
-  @@index([date])
+  @@index([date, id, address, result])
 }
 
 model Account {

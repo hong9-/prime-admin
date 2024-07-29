@@ -26,10 +26,12 @@ import CIcon from '@coreui/icons-react'
 import { cilUser, cilCalendar, cilAddressBook, cilCheck } from '@coreui/icons'
 import {
   DateTimePicker,
+  DateTimeValidationError,
   LocalizationProvider,
+  PickerChangeHandlerContext,
 } from '@mui/x-date-pickers'
 import { AdapterDayjs } from '@mui/x-date-pickers/AdapterDayjs';
-import dayjs from 'dayjs'
+import dayjs, { Dayjs } from 'dayjs'
 import { UserInfo, state } from 'app/store'
 import { useAppSelector } from 'app/hooks'
 import { useSession } from 'next-auth/react'
@@ -37,22 +39,24 @@ import { useRouter } from 'next/navigation'
 
 import { Address, DaumPostcodeEmbed } from "react-daum-postcode";
 import { userInfo } from 'auth'
-import { dateToForm, resultType, resultList, resultMap } from 'app/scheduleUtil'
+import { dateToForm, resultList, resultMap } from 'app/scheduleUtil'
+import { ScheduleResult } from '@prisma/client'
 
 const ScheduleInfo = (props:any) => {
   const { visible, onClose, onSubmit, onRemove, schedule } = props;
   const { userInfo } = useAppSelector((state:state)=>state) || {userId: '', name: '', role: '', sales: []};
   const [ currentSchedule, setCurrentSchedule ] = useState();
-  let test = dateToForm(new Date(), true);
   // console.log(test);
   const [ address, setAddress ] = useState('');
-  const [ date, setDate ] = useState(test);
-  const [ manager, setManager ] = useState('담당자 선택');
-  const [ result, setResult ] = useState('' as resultType);
+  const [ date, setDate ] = useState(dateToForm(new Date()));
+  // const [ manager, setManager ] = useState(schedule.manager || '담당자 선택');
+  const [ manager, setManager ] = useState(schedule.manager || '');
+  const [ result, setResult ] = useState(schedule.result || resultList[0] as ScheduleResult);
   const [ addressSoftModal, setAddressSoftModal ] = useState(false)
+  const [ needRefresh, setNeedRefresh ] = useState(false);
   const { workers } = useSession().data?.user as any;
   
-  console.log(workers);
+  // console.log(workers);
   let currentSales: Array<UserInfo> = workers || [{
     email: 'abcde',
     name: '박과장',
@@ -68,12 +72,14 @@ const ScheduleInfo = (props:any) => {
   }];
 
   useEffect(()=> {
+    console.log(schedule);
     // if(schedule) {
-      console.log("changed", schedule)
+      // console.log("changed", schedule)
       // setId(schedule ? schedule.id : "");
-      setAddress(schedule ? schedule.address: "");
-      setDate(schedule ? schedule.date: dateToForm(new Date(), true));
-      setManager(schedule ? schedule.manager: "");
+      setAddress(schedule && schedule.address || "");
+      setDate(schedule && schedule.date || dateToForm(new Date()));
+      setManager(schedule && schedule.manager || "");
+      setResult(schedule && schedule.result || resultList[0]);
       setCurrentSchedule(schedule);
     // } else {
       // console.log("Not changed");
@@ -83,9 +89,10 @@ const ScheduleInfo = (props:any) => {
   
   const onModalClose = ()=> {
     setCurrentSchedule(undefined);
-    setAddress(schedule ? schedule.address: "");
-    setDate(schedule ? schedule.date: "");
-    setManager(schedule ? schedule.manager: "");
+    setAddress(schedule && schedule.address || "");
+    setDate(schedule && schedule.date || dateToForm(new Date()));
+    setManager(schedule && schedule.manager || "");
+    setResult(schedule && schedule.result || resultList[0]);
     onClose();
   }
   const onAddressModalClose = ()=> {
@@ -94,28 +101,39 @@ const ScheduleInfo = (props:any) => {
   const onScheduleSubmit = (event: FormEvent)=> {
     console.log(event);
     onSubmit(event);
-    setAddress(schedule ? schedule.address: "");
-    setDate(schedule ? schedule.date: "");
-    setManager(schedule ? schedule.manager: "");
-  }
+    setAddress(schedule && schedule.address || "");
+    setDate(schedule && schedule.date || dateToForm(new Date()));
+    setManager(schedule && schedule.manager || "");
+    setResult(schedule && schedule.result || resultList[0]);
+}
 
   const onScheduleRemove = ()=> {
 
   }
   const handleAddress = (_address: Address)=> {
     console.log(_address)
+    _address.address
     onAddressModalClose();
-    // setAddress(_address);
+    setAddress(_address.address);
+  }
+
+  const handleDatePickerChange = (e: any, b: any)=> {
+    let _date;
+    try {
+      _date = e && new Date(e.toISOString());
+    } catch(e) {}
+    _date && setDate(dateToForm(_date, dateToForm.WITHHOUR))
   }
 
   const handleChange = ()=> {
 
   }
+  // console.log(manager, result);
   return (
     <>
       <LocalizationProvider
         dateAdapter={AdapterDayjs}
-        adapterLocale='kr'
+        adapterLocale='ko'
       >
         <CModal visible={visible} onClose={onModalClose}>
           <CModalHeader>
@@ -148,7 +166,7 @@ const ScheduleInfo = (props:any) => {
                   ampm={false}
                   value={dayjs(date)}
                   // defaultValue={dayjs(Date.now())}
-                  onChange={(e, b)=> {console.log(e, this, b)}}//setDate(e.currentTarget.value)}}
+                  onChange={handleDatePickerChange}
                 />
               </CInputGroup>
               <CInputGroup className="mb-4">
@@ -157,14 +175,14 @@ const ScheduleInfo = (props:any) => {
                 </CInputGroupText>
                   <CFormSelect id="inputGroupSelect01"
                     value={manager}
-                    onChange={(e)=> {setManager(e.currentTarget.value)}}
+                    onChange={(e)=> setManager(e.target.value)}
                   >
-                    <option>담당자 선택</option>
+                    <option value="">담당자 선택</option>
                     {/* {currentSales.map((_man)=>(
                       <option key={_man.email} value={_man.email}>{_man.name}</option>
                     ))} */}
                     {workers ? workers.map((worker: userInfo)=>
-                      <option key={worker.email} value={worker.email} selected={schedule.manager === worker.name}>{worker.name}</option>
+                      <option key={worker.email} value={worker.email}>{worker.name}</option>
                     ) : null}
                   </CFormSelect>
 
@@ -174,11 +192,11 @@ const ScheduleInfo = (props:any) => {
                   <CIcon icon={cilCheck} />
                 </CInputGroupText>
                   <CFormSelect id="inputGroupSelect01"
-                    value={resultMap[result]}
-                    onChange={(e)=> {setResult(e.currentTarget.value as resultType)}}
+                    value={result}
+                    onChange={(e)=> {setResult(e.target.value)}}
                   >
-                    {resultList.map((result)=>
-                      <option key={result} value={result} selected={schedule.result === result}>{resultMap[result]}</option>
+                    {resultList.map((_result, i)=>
+                      <option key={i} value={resultList[i]}>{resultMap[_result]}</option>
                     )}
                   </CFormSelect>
 

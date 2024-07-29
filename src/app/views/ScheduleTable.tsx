@@ -1,7 +1,7 @@
 "use client";
 
 import "core-js";
-import React, { useEffect, useState, Suspense } from 'react'
+import React, { useEffect, useState, Suspense, useReducer, useRef } from 'react'
 import {
   CButton,
   CCard,
@@ -24,40 +24,118 @@ import {
   CInputGroupText,
   CRow,
   CAlert,
+  CBadge,
+  CPagination,
+  CPaginationItem,
+  CCardFooter,
+  CFormLabel,
+  CTooltip,
+  CPopover,
+  CFormSelect,
 } from '@coreui/react'
 import CIcon from '@coreui/icons-react'
-import { cilLockLocked, cilUser } from '@coreui/icons'
+import { cilArrowBottom, cilArrowTop, cilCalendar, cilLockLocked, cilPeople, cilPhone, cilUser } from '@coreui/icons'
 import { setServers } from "dns";
 import ScheduleInfo from "./ScheduleInfo";
 import { apiRequest } from "app/api/apiRequest";
-import { getScheduleList, schedule } from "app/scheduleUtil";
+import { colorSetBadge, dateToForm, filter, getScheduleList, orderDirection, orderItem, resultList, resultMap, schedule, scheduleDisplay, scheduleSortParam, scheduleToDisplay } from "app/scheduleUtil";
+import { DatePicker, DateTimePicker, LocalizationProvider } from "@mui/x-date-pickers";
+import { AdapterDayjs } from "@mui/x-date-pickers/AdapterDayjs";
+import dayjs from "dayjs";
+import { table } from "console";
+import { useSession } from "next-auth/react";
+import { Role } from "@prisma/client";
+import { userInfo, Worker } from "auth";
 
 let _modal: boolean = false;
-// let _selectedUser: any = undefined;
+
+const headerList = [
+  '일정ID',
+  '주소',
+  '일정',
+  '담당TM',
+  '담당영업',
+  '상태',
+]
+const headerValue = [
+  'id',
+  'address',
+  'date',
+  'viewer',
+  'manager',
+  'result',
+]
+const tableItemMax = 10;
+const defaultFromDate = dateToForm(new Date(0), dateToForm.NOHOUR);
+const defaultToDate = dateToForm(new Date(), dateToForm.NOHOUR);
+const month = 86400000 * 30;
+const rangeLength = [
+  month * 12 + 86400000 * 5,
+  month * 6 + 86400000 *3,
+  month * 3 + 86400000 *2,
+  month,
+];
+const rangeButtonNames = [
+  '1년',
+  '6개월',
+  '3개월',
+  '1개월',
+];
+
+let total = 0;
+let pageMax = 0;
+
+const checkFilter = (header: string)=> ['담당TM', '담당영업', '상태'].indexOf(header) === -1
+
 const ScheduleTable = () => {
   let [ modal, setModal ] = useState(_modal);
-  let [ scheduleList, setScheduleList ] = useState([] as Array<schedule>)
+  let [ scheduleList, setScheduleList ] = useState([] as Array<scheduleDisplay>)
   let [ schedule, setSchedule ] = useState({} as schedule)
-  // let [ people, setPeople ] = useState(undefined as Array<person> | undefined);
-  // let [ user, setUser ] = useState(_selectedUser);
-  // user = _selectedUser;
+  let [ orderItem, setOrderItem] = useState('date' as orderItem);
+  let [ orderDirection, setOrderDirection ] = useState('desc' as orderDirection);
+  let [ filter, setFilter ] = useState({} as filter);
+  let [ sales, setSales ] = useState('');
+  let [ tm, setTm ] = useState('');
+  let [ result, setResult ] = useState('');
+  let [ currentPage, setCurrentPage ] = useState(1 as number);
+  let [ from, setFrom ] = useState('' as string);
+  let [ to, setTo ] = useState(defaultToDate);
+  let [ range, setRange ] = useState(undefined as any);
+  let { data } = useSession();
+  let popoverRef = useRef(null);
+
+  // console.log(popoverRef);
+  // console.log(data?.user);
+
+  // pagination setting
+  let minPage: number, maxPage: number;
+  if(currentPage - 5 < 0) {
+    minPage = 0;
+    maxPage = pageMax / tableItemMax < 10 ? Math.ceil(pageMax / tableItemMax) : 10;
+  } else if(pageMax / tableItemMax - currentPage < 5){
+    minPage = Math.ceil(pageMax / tableItemMax) - 10;
+    maxPage = Math.ceil(pageMax / tableItemMax);
+  } else {
+    minPage = currentPage - 5;
+    maxPage = currentPage + 5;
+  }
 
   useEffect(()=> {
-    getScheduleList().then((scheduleList)=> {
-      setScheduleList(scheduleList);
+    getScheduleList({
+      orderItem,
+      orderDirection,
+      filter,
+      currentAmount: (currentPage - 1) * tableItemMax,
+      from: range?.from,
+      to: range?.to,
+    } as scheduleSortParam).then((result)=> {
+      total = result?.total;
+      pageMax = result?.pageMax;
+      const scheduleList: Array<schedule> = result?.scheduleList;
+      console.log(scheduleList);
+      setScheduleList(scheduleList.map((schedule)=> scheduleToDisplay(schedule)));
     });
-    // apiRequest('get', 'user').then(({ code, people: _people })=> {
-    //   if(code !== 0) {
-    //     alert('error');
-    //     return;
-    //   }
-    //   console.log('setPeople done', _people)
-    //   if(_people)
-    //     return _people;
-    //     // setPeople(_people);
-    // }).then((_people)=> setPeople(_people));
-  
-  }, []);
+  }, [orderItem, orderDirection, filter, range, currentPage]);
 
   const onCloseModal = ()=> {
     _modal = false;
@@ -65,58 +143,264 @@ const ScheduleTable = () => {
     setModal(false);
   }
 
+  const RangeButton = ()=>rangeButtonNames.map((rangeButtonName, i)=>
+    <CButton
+      key={i}
+      type="button"
+      variant="outline"
+      color="primary"
+      onClick={()=> {
+        setFrom(dateToForm(new Date(Date.now() - rangeLength[i]), dateToForm.NOHOUR));
+        // console.log(dateToForm(now));
+      }}
+    >{rangeButtonName}</CButton>
+  )
+
+  const handleClickHeader = (i: number)=> {
+    if(checkFilter(headerList[i]))
+      return;
+
+    const target = headerValue[i];
+    if(orderItem === target)
+      setOrderDirection(orderDirection === 'desc' ? 'asc' : 'desc');
+    setOrderItem(headerValue[i] as orderItem);
+
+    console.log(headerValue[i])
+  }
+
+  const handleDatePickerChange = (e: any, b: any)=> {
+    let _from;
+    try {
+      _from = e && new Date(e.toISOString());
+    } catch(e) {}
+    _from && setFrom(dateToForm(_from, dateToForm.NOHOUR))
+  }
+
+  const handleSearch = ()=> {
+    setCurrentPage(1);
+    setRange({
+      from,
+      to
+    });
+  }
+  const handleReset = ()=> {
+    setCurrentPage(1);
+    setRange(undefined);
+  }
+
+  const DrawHeader = ({index, value}: {index: number, value: string})=> {
+    let optionList;
+    // console.log(headerValue[key], headerList[key])
+    // console.log(data?.user?.workers)
+    let formValue, setState;
+    if(value === '담당영업') {
+      formValue = sales;
+      setState = setSales;
+      optionList = data?.user?.workers?.filter((worker)=>worker.role === Role.SALES)?.map((item: any, i)=>
+        <option key={i} value={item.email}>{item.name}</option>
+      )
+    } else if (value === '담당TM') {
+      formValue = tm;
+      setState = setTm;
+      optionList = data?.user?.workers?.filter((worker)=>worker.role === Role.TM).map((item: any, i)=>
+        <option key={i} value={item.email}>{item.name}</option>
+      )
+    } else if (value === '상태') {
+      formValue = result;
+      setState = setResult;
+      optionList = resultList.map((item, i)=>
+        <option key={i} value={item}>{resultMap[item]}</option>
+      )
+    } else {
+      setState = ()=>{};
+    }
+
+    // console.log(optionList)
+    if(!optionList) return (<>Error</>)
+
+    return (<>
+      <CFormSelect
+        key={index}
+        value={formValue}
+        onChange={(e)=>{
+          let nextState = {
+            ...filter
+          };
+          
+          if(e.target.value === '') {
+            nextState[headerValue[index]] = undefined;
+            setState(e.target.value);
+            setFilter(nextState);
+            setCurrentPage(1);
+          } else {
+            nextState[headerValue[index]] = e.target.value;
+            setState(e.target.value);
+            setFilter(nextState);
+            setCurrentPage(1);
+          }
+          // filterItem, filterValue
+          // if(orderItem === target)
+          //   setOrderDirection(orderDirection === 'desc' ? 'asc' : 'desc');
+          // setOrderItem(headerValue[i] as orderItem);
+
+          // if(e.target.value === '') {
+          //   setFilterValue('');
+          // } else {
+          //   setFilterItem(headerValue[index] as filterItem);
+          // }
+          // setFilterValue(e.target.value);
+          // setFilterItem(headerValue[index] as filterItem);
+          console.log(e.target.value);
+          // setFilterValue(e.target.value);
+          // setFilterItem(headerValue[index])
+          console.log(headerValue[index]);
+        }}
+      >
+        <option value={""}>{headerList[index]}</option>
+        {optionList}
+      </CFormSelect>
+    </>)
+  }
   return (
     <>
-      <CCard className="mb-4">
-        <CCardHeader>
-          <strong>계약 관리</strong>
-        </CCardHeader>
-        <CCardBody>
-          <CTable >
-            <CTableHead>
-              <CTableRow>
-                <CTableHeaderCell scope="col">스케줄ID</CTableHeaderCell>
-                <CTableHeaderCell scope="col">주소</CTableHeaderCell>
-                <CTableHeaderCell scope="col">일정</CTableHeaderCell>
-                <CTableHeaderCell scope="col">담당TM</CTableHeaderCell>
-                <CTableHeaderCell scope="col">담당영업</CTableHeaderCell>
-                <CTableHeaderCell scope="col">상태</CTableHeaderCell>
-              </CTableRow>
-            </CTableHead>
-            <CTableBody>
-              {
-              scheduleList ? scheduleList.map((schedule, i)=> {
-                return (<></>
-                  // <CTableRow key={i}>
-                  //   <CTableDataCell onClick={()=>onUserClick(person)}>{person.email}</CTableDataCell>
-                  //   <CTableDataCell onClick={()=>onUserClick(person)}>{person.name}</CTableDataCell>
-                  //   <CTableDataCell onClick={()=>onUserClick(person)}>{person.role}</CTableDataCell>
-                  //   <CTableDataCell>{person.inited ? <CButton color="danger" onClick={()=>onPasswordInitClick(person.email)}>재설정</CButton> : null}</CTableDataCell>
-                  //   <CTableDataCell><CButton color="danger" onClick={()=>onUserRemove(person.email)}>삭제</CButton></CTableDataCell>
-                  // </CTableRow>
-                )
-              })
-              :
-              <div className="pt-3 page-loading text-center">
-                <CSpinner color="primary" variant="grow" />
-              </div>
-              }
-            </CTableBody>
-          </CTable>
-        </CCardBody>
-      </CCard>
-      <div className="align-right">
-        <CButton
-          color="primary"
-          onClick={()=>{_modal = true;setModal(true);}}
-        >직원 등록</CButton>
-      </div>
-      <ScheduleInfo
-        visible={modal}
-        schedule={schedule}
-        onSubmit={()=>console.log('onSubmit')}
-        onClose={()=>{_modal = false;setModal(false);setSchedule({} as schedule)}}
-      />
+      <LocalizationProvider
+        dateAdapter={AdapterDayjs}
+        adapterLocale='ko'
+      >
+        <CCard className="mb-4">
+          <CCardHeader>
+            <strong>계약 관리</strong>
+          </CCardHeader>
+          <CCardBody>
+            <CTable >
+              <CTableHead>
+                <CTableRow>
+                  {/*customClassName="nav-icon"*/}
+                  {headerList.map((headerName, i)=>
+                    <CTooltip 
+                      key={i}
+                      content={`클릭하시면 ${
+                        checkFilter(headerName) ?
+                        "정렬됩니다.":
+                        "필터를 선택할 수 있습니다."}`
+                      }
+                      // placement="auto"
+                      offset={[0,0]}
+                    >
+                      <CTableHeaderCell
+                        key={i}
+                        scope="col"
+                        onClick={checkFilter(headerName) ?
+                          ()=>handleClickHeader(i) :
+                          undefined
+                        }
+                      >
+                        {checkFilter(headerName) ? headerName :
+                          <DrawHeader
+                            key={i}
+                            index={i}
+                            value={headerName}
+                          />
+                        }
+                        {headerValue[i] === orderItem ?
+                          <CIcon icon={orderDirection === 'desc' ? cilArrowBottom : cilArrowTop} />
+                        : null}
+                      </CTableHeaderCell>
+                    </CTooltip>
+                  )}
+                </CTableRow>
+              </CTableHead>
+              <CTableBody>
+                {
+                scheduleList ? scheduleList.map((schedule, i)=> {
+                  return (
+                    <CTableRow key={i}>
+                      <CTableDataCell>{schedule.id}</CTableDataCell>
+                      <CTableDataCell>{schedule.address}</CTableDataCell>
+                      <CTableDataCell>{dateToForm(new Date(schedule.date), dateToForm.NOHOUR)}</CTableDataCell>
+                      <CTableDataCell>{schedule.viewer} <CIcon icon={cilPhone}/></CTableDataCell>
+                      <CTableDataCell>{schedule.managerName} <CIcon icon={cilPeople}/></CTableDataCell>
+                      <CTableDataCell>
+                        <CBadge color={colorSetBadge[schedule.result]}>{resultMap[schedule.result]}</CBadge>
+                      </CTableDataCell>
+                    </CTableRow>
+                  )
+                })
+                :
+                <div className="pt-3 page-loading text-center">
+                  <CSpinner color="primary" variant="grow" />
+                </div>
+                }
+              </CTableBody>
+            </CTable>
+          </CCardBody>
+          <CCardFooter>
+            <CInputGroup className="align-right">
+              <RangeButton/>
+              <CInputGroupText>
+                <CIcon icon={cilCalendar} />
+              </CInputGroupText>
+              <DatePicker
+                format="YYYY-MM-DD"
+                timezone="system"
+                value={from ? dayjs(from) : dayjs(new Date(0))}
+                onChange={handleDatePickerChange}
+              ></DatePicker>
+              <CInputGroupText>~</CInputGroupText>
+              <DatePicker
+                format="YYYY-MM-DD"
+                timezone="system"
+                value={to ? dayjs(to) : dayjs(new Date(0))}
+                onChange={handleDatePickerChange}
+              ></DatePicker>
+              <CButton
+                type="button"
+                // variant="outline"
+                color="primary"
+                onClick={handleSearch}
+              >검색</CButton>
+              <CButton
+                type="button"
+                // variant="outline"
+                color="primary"
+                onClick={handleReset}
+              >기간 해제</CButton>
+            </CInputGroup>
+            <CPagination
+              align="center"
+              color="primary"
+            >
+              <CPaginationItem
+                aria-label="Previous"
+                disabled={currentPage === 1}
+                onClick={()=>setCurrentPage(--currentPage)}
+              >
+                <span aria-hidden="true">&laquo;</span>
+              </CPaginationItem>
+              {Array(maxPage - minPage).fill('').map((page, i)=> 
+                <CPaginationItem
+                  key={i}
+                  active={currentPage === minPage+i+1}
+                  onClick={()=>setCurrentPage(minPage+i+1)}
+                >{minPage+i+1}</CPaginationItem>
+              )}
+              <CPaginationItem
+                aria-label="Next"
+                disabled={currentPage===Math.ceil(pageMax/tableItemMax)}
+                onClick={()=>setCurrentPage(++currentPage)}
+              >
+                <span aria-hidden="true">&raquo;</span>
+              </CPaginationItem>
+            </CPagination>
+          </CCardFooter>
+        </CCard>
+        {/* <ScheduleInfo
+          visible={modal}
+          schedule={schedule}
+          onSubmit={()=>console.log('onSubmit')}
+          onClose={()=>{_modal = false;setModal(false);setSchedule({} as schedule)}}
+        /> */}
+      </LocalizationProvider>
     </>
   )
 }

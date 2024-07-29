@@ -30,6 +30,7 @@ import { Notification } from "app/store";
 import { CDropdownContext } from '@coreui/react/dist/esm/components/dropdown/CDropdown'
 import Link from 'next/link'
 import { useRouter } from 'next/navigation'
+import { apiRequest } from 'app/api/apiRequest'
 
 const exampleNotifications: Array<Notification> = [
   {
@@ -62,8 +63,11 @@ const AppNotificationDropdown = () => {
   const notiList:Array<Notification> = data?.user?.Notifications || exampleNotifications;
   const onClick = (noti: Notification)=>{
     console.log(noti);
-    router.push(noti.link);
-    // redirect('/Schedule/')
+    apiRequest('post', 'notification', {id: noti.id}).then(({code})=> {
+      if(code === 0) {
+        router.push(noti.link);
+      }
+    })
   }
 
   return (
@@ -77,12 +81,11 @@ const AppNotificationDropdown = () => {
           <CDropdownItem
             key={i}
             className={(noti.confirmed ? "confirmed" : "")}
-            onClick={()=>onClick(noti)}>
-            {/* <Link href={`/ScheduleList/${noti.id}`}> */}
-              <CIcon icon={noti.confirmed ? cilBellExclamation : cilBell } className="me-2" />
-              {noti.message}
-              <div className="notification-timestamp">2012/03/05 07:35</div>
-            {/* </Link> */}
+            onClick={()=>onClick(noti)}
+          >
+            <CIcon icon={noti.confirmed ? cilBellExclamation : cilBell } className="me-2" />
+            {noti.message}
+            <div className="notification-timestamp">2012/03/05 07:35</div>
           </CDropdownItem>
         ))}
       </CDropdownMenu>

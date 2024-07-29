@@ -2,28 +2,37 @@ import { PrismaClient } from '@prisma/client';
 import { userInfo } from 'auth';
 import { RequestBody, ResponseBody, sessionHandler } from 'app/api/common';
 
-export const GET = sessionHandler(async (prisma: PrismaClient, user: userInfo, body: RequestBody)=> {
+export const POST = sessionHandler(async (prisma: PrismaClient, user: userInfo, body: RequestBody)=> {
   console.log('get body: ', body, user);
-  // if (user.role === 'TM') {
-    
-  // }
-  const scheduleList = await prisma.user.findMany({
-    where: {
-      email: user.email
-    },
-    include: {
-      Schedule: {
-        select: {
-          date: true,
-          address: true,
-          note: true,
-          result: true,
+  const creatorId = user.email;
+  const { manager, address, date, result } = body as any;
+
+  const dbResponse = await prisma.schedule.create({
+    data: {
+      date: new Date(date),
+      address,
+      creatorId,
+      result,
+      manager: {
+        connect: {
+          email: manager,
         }
       },
+      viewer: {
+        connect: [
+          {
+            email: creatorId,
+          },
+          {
+            email: "admin001",
+          },
+        ]
+      }
     }
-  })
+  });
+
+  console.log(dbResponse);
   return {
     code: 0,
-    scheduleList,
   }
 });

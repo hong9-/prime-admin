@@ -30,8 +30,8 @@ body {
         height: 100px;
     }
     .no-scroll-bar::-webkit-scrollbar {
-        right: 0;
-        // display: none;
+        // right: 0;
+        display: none;
     }
 }
 .password-alert {
@@ -61,4 +61,25 @@ body {
     li {
         cursor: pointer;
     }
+}
+.MuiTextField-root {
+    input {
+        padding: 10px 10px;
+        width: 105px;
+    }
+}
+.modal-body {
+    .MuiTextField-root {
+        input {
+            padding: 10px 10px;
+            width: 100%;
+        }
+    }
+}
+
+.page-item {
+    width: 50px;
+    text-align: center;
+    cursor: pointer;
+    user-select: none;
 }

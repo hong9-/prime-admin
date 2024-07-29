@@ -22,7 +22,7 @@ const _nav = [
   {
     component: CNavItem,
     name: '요약',
-    href: '/Dashboard',
+    href: '/',
     className: 'nav-link',
     icon: <CIcon icon={cilSpeedometer} customClassName="nav-icon" />,
     badge: {

@@ -24,24 +24,29 @@ import {
 } from '@coreui/react'
 import CIcon from '@coreui/icons-react'
 import { cilUser } from '@coreui/icons'
+import { Role } from '@prisma/client'
+import { useSession } from 'next-auth/react'
 
 const UserInfo = (props: any) => {
   const {visible, onClose, onSubmit, onRemove, user} = props;
+  const { data } = useSession();
   const [currentUser, setCurrentUser] = useState();
   const [email, setEmail] = useState();
+  const [role, setRole] = useState(data?.user.role === Role.ADMIN ? Role.TM : Role.SALES);
   const [name, setName] = useState();
-  const [role, setRole] = useState();
   const [inited, setInited] = useState();
+  
   useEffect(()=> {
     if(!currentUser) {
       setEmail(user ? user.email : "");
       setName(user ? user.name: "");
-      setRole(user ? user.role: "");
+      // setRole(user ? user.role: "");
       setInited(user ? user.inited: "");
       setCurrentUser(user);
     }
   }, [currentUser, user])
-  
+
+  console.log(role);
   return (
     <>
       <CModal visible={visible}>
@@ -86,8 +91,8 @@ const UserInfo = (props: any) => {
               value={role}
               onChange={(e:any)=>setRole(e.target.value)}
             >
-              <option>TM</option>
-              <option>SALE</option>
+              {data?.user.role === Role.TM ? null : <option value={Role.TM}>TM</option>}
+              <option value={Role.SALES}>SALES</option>
             </CFormSelect>
           </CInputGroup>
           {inited?
@@ -101,7 +106,7 @@ const UserInfo = (props: any) => {
             <CButton color="secondary" onClick={()=>onRemove(email)}>삭제</CButton>
           :null}
           <CButton color="primary" onClick={()=> {
-            onSubmit({email, name, role, inited});
+            onSubmit({email, name, role});
           }}>{user ? "저장" : "생성"}</CButton>
           <CButton color="secondary" onClick={()=> {setCurrentUser(undefined);onClose();}}>
             닫기

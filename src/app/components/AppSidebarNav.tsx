@@ -6,14 +6,17 @@ import SimpleBar from 'simplebar-react'
 import 'simplebar-react/dist/simplebar.min.css'
 
 import { CBadge, CNavLink, CSidebarNav } from '@coreui/react'
+import { Role } from '@prisma/client';
 
 interface prop {
   items?: Array<any>,
 }
 
 import Link from 'next/link'
+import { useSession } from 'next-auth/react'
 
 export const AppSidebarNav = (props:prop) => {
+  const { data } = useSession();
   const { items } = props;
   const navLink = (name: string, icon: string, badge: any, indent: boolean | undefined = false) => {
     return (
@@ -40,12 +43,12 @@ export const AppSidebarNav = (props:prop) => {
     const Component = component
     return (
       <Component as="div" key={index}>
-        {rest.to || rest.href ? (
+        {(rest.to || rest.href) && (data?.user?.role === Role.ADMIN || !badge) ? (
           <Link {...(rest.to && { as: NavLink })} {...rest}>
             {navLink(name, icon, badge, indent)}
           </Link>
         ) : (
-          navLink(name, icon, badge, indent)
+          null
         )}
       </Component>
     )

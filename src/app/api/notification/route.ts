@@ -32,3 +32,20 @@ export const GET = sessionHandler(async (prisma: PrismaClient, user: userInfo, b
     notificationList,
   }
 });
+
+export const POST = sessionHandler(async (prisma: PrismaClient, user: userInfo, body: RequestBody)=> {
+  const { id } = body as any;
+
+  const notificationConfirm = await prisma.notification.update({
+    where: {
+      id,
+    },
+    data: {
+      confirmed: true,
+    }
+  });
+
+  return {
+    code: 0
+  };
+});

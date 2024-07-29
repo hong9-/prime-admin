@@ -62,9 +62,12 @@ async function main() {
         role: "SALES",
         needPasswordReset: true,
         managers: {
-          connect: {
+          connect: [{
             email: 'tm00'+(Math.floor(i/3)+1),
+          }, {
+            email: 'admin001',
           }
+        ],
         }
       },
     }).then((e)=>{

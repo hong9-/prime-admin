@@ -24,10 +24,12 @@ import {
   CInputGroupText,
   CRow,
   CAlert,
+  CCardFooter,
+  CCardText,
+  CCardTitle,
 } from '@coreui/react'
 import CIcon from '@coreui/icons-react'
-import { cilLockLocked, cilUser } from '@coreui/icons'
-import { setServers } from "dns";
+import { cilLockLocked, cilPeople, cilPhone, cilUser } from '@coreui/icons'
 import UserInfo from "./UserInfo";
 import { apiRequest } from "app/api/apiRequest";
 
@@ -35,7 +37,7 @@ interface person {
   email: string,
   name: string,
   role: string,
-  inited: boolean,
+  needPasswordReset: boolean,
 }
 
 const examplePeople: Array<person> = [
@@ -43,37 +45,37 @@ const examplePeople: Array<person> = [
     email: 'tm001',
     name: '김모씨',
     role: 'TM',
-    inited: false,
+    needPasswordReset: false,
   },
   {
     email: 'tm002',
     name: '이모씨',
     role: 'TM',
-    inited: true,
+    needPasswordReset: true,
   },
   {
     email: 'tm003',
     name: '박모씨',
     role: 'TM',
-    inited: false,
+    needPasswordReset: false,
   },
   {
     email: 'sales001',
     name: '최모씨',
     role: 'SALE',
-    inited: false,
+    needPasswordReset: false,
   },
   {
     email: 'sales002',
     name: '정모씨',
     role: 'SALE',
-    inited: false,
+    needPasswordReset: false,
   },
   {
     email: 'sales003',
     name: '홍모씨',
     role: 'SALE',
-    inited: false,
+    needPasswordReset: false,
   },
 ]
 
@@ -83,6 +85,7 @@ const UserList = () => {
   let [ modal, setModal ] = useState(_modal);
   let [ people, setPeople ] = useState(undefined as Array<person> | undefined);
   let [ user, setUser ] = useState(_selectedUser);
+  let [ listChanged, setListChanged ] = useState(1);
   user = _selectedUser;
 
   useEffect(()=> {
@@ -91,20 +94,32 @@ const UserList = () => {
         alert('error');
         return;
       }
-      console.log('setPeople done', _people)
       if(_people)
         return _people;
-        // setPeople(_people);
     }).then((_people)=> setPeople(_people));
   
-  }, []);
+  }, [listChanged]);
 
-  const onPasswordInitClick = (id:string)=> {
-    confirm(`비밀번호 초기화 ${id}`)
+  const onPasswordInitClick = (email:string)=> {
+    if(confirm(`사용자 ${email}의 비밀번호를 초기화하시겠습니까?`)) {
+      apiRequest('post', 'user/update', { email, needPasswordReset: true }).then((res)=> {
+        let {code, message} = res;
+        if(code) return alert('삭제 실패:\n\n' + (message || JSON.stringify(res)));
+        alert('초기화 성공');
+        setListChanged(++listChanged);
+      });
+    }
+    
   }
-  const onUserRemove = (id:string)=> {
-    confirm(`유저 삭제 ${id}`)
-    console.log('Remove user', id);
+  const onUserRemove = (email:string)=> {
+    if(confirm(`사용자 ${email}(을/를) 삭제하시겠습니까?`)) {
+      apiRequest('post', 'user/remove', { email }).then((res)=> {
+        let {code, message} = res;
+        if(code) return alert('삭제 실패:\n\n' + (message || JSON.stringify(res)));
+        alert('삭제 성공');
+        setListChanged(++listChanged);
+      });
+    }
   }
 
   const onUserClick = (user:any)=> {
@@ -123,27 +138,31 @@ const UserList = () => {
 
   const onUserAdd = (user: any)=> {
     console.log('useradd', user);
-    fetch('/api/user', {
-      method: 'POST',
-      cache: 'no-cache',
-      headers: {
-        'Content-Type': 'application/json',
-      },
-      body: JSON.stringify(user),
-    }).then((result)=> {
+    apiRequest('post', 'user/create', user).then((result)=> {
+      const { code, message } = result as any;
       console.log(result);
+      if(code) return alert('생성 실패' + JSON.stringify(message));
+      alert('등록 성공');
+      setListChanged(++listChanged);
     });
     setModal(false);
   }
 
-  console.log('render check', modal, user, _selectedUser, people);
+  // console.log('render check', modal, user, _selectedUser, people);
   return (
     <>
       <CCard className="mb-4">
         <CCardHeader>
-          <strong>직원 관리</strong>
+          <CCardTitle><strong>직원 관리</strong></CCardTitle>
         </CCardHeader>
         <CCardBody>
+          <div className="align-right">
+            <CButton
+              color="primary"
+              onClick={()=>{_modal = true;setModal(true);}}
+              className="align-right"
+            >직원 등록</CButton>
+          </div>
           <CTable >
             <CTableHead>
               <CTableRow>
@@ -160,9 +179,14 @@ const UserList = () => {
                   <CTableRow key={i}>
                     <CTableDataCell onClick={()=>onUserClick(person)}>{person.email}</CTableDataCell>
                     <CTableDataCell onClick={()=>onUserClick(person)}>{person.name}</CTableDataCell>
-                    <CTableDataCell onClick={()=>onUserClick(person)}>{person.role}</CTableDataCell>
-                    <CTableDataCell>{person.inited ? <CButton color="danger" onClick={()=>onPasswordInitClick(person.email)}>재설정</CButton> : null}</CTableDataCell>
-                    <CTableDataCell><CButton color="danger" onClick={()=>onUserRemove(person.email)}>삭제</CButton></CTableDataCell>
+                    <CTableDataCell onClick={()=>onUserClick(person)}>
+                      {person.role} {person.role === 'TM'
+                        ? <CIcon icon={cilPhone}/>
+                        : <CIcon icon={cilPeople}/>
+                      }
+                    </CTableDataCell>
+                    <CTableDataCell>{!person.needPasswordReset ? <CButton color="primary" onClick={()=>onPasswordInitClick(person.email)}>재설정</CButton> : null}</CTableDataCell>
+                    <CTableDataCell><CButton color="danger" variant="outline" onClick={()=>onUserRemove(person.email)}>삭제</CButton></CTableDataCell>
                   </CTableRow>
                 )
               }):
@@ -172,17 +196,14 @@ const UserList = () => {
             </CTableBody>
           </CTable>
         </CCardBody>
+        <CCardFooter>
+        </CCardFooter>
       </CCard>
-      <div className="align-right">
-        <CButton
-          color="primary"
-          onClick={()=>{_modal = true;setModal(true);}}
-        >직원 등록</CButton>
-      </div>
       <UserInfo
         visible={modal}
         onClose={onCloseModal}
         onSubmit={onUserAdd}
+        onRemove={onUserRemove}
         user={_selectedUser}
       />
     </>
