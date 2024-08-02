@@ -1,14 +1,9 @@
 "use client"
-
-import Image from "next/image";
 import 'core-js';
 
 import App from './App';
 import { useSession } from "next-auth/react";
-import { AppProps } from "next/app";
 import StoreProvider from "app/StoreProvider";
-import { useRouter } from "next/navigation";
-import { CSpinner } from "@coreui/react";
 import Login from "./Login/page";
 import CreatePassword from "./CreatePassword/page";
 import Loading from "./components/Loading";
@@ -16,9 +11,7 @@ import Loading from "./components/Loading";
 const start = Date.now();
 
 export default function Home() {
-  const route = useRouter();
   const { data: sessionData, status } = useSession();
-  // const status = getStatus();
 
   console.log(sessionData);
   if (sessionData === undefined || status === 'loading') {
@@ -33,7 +26,7 @@ export default function Home() {
     console.log('Need to redirect to CreatePassword!!!!!!!', status, Date.now() - start);
     return <CreatePassword />;
   }
-  
+
   console.log('session loading done...', status, Date.now() - start);
   return ( 
     <StoreProvider>

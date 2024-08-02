@@ -18,7 +18,7 @@ export const apiRequest = async(
     headers: {
       'Content-Type': 'application/json',
     },
-    body: type === 'post' && data ? JSON.stringify(data) : undefined,
+    body: (type === 'post' && data) ? JSON.stringify(data) : undefined,
   }).catch((e)=> {
     console.log(e);
     return {

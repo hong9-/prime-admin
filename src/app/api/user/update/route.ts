@@ -36,7 +36,7 @@ export const POST = sessionHandler(async (prisma: PrismaClient, user: userInfo, 
     } as ResponseBody
   });
 
-  console.log('dbResponse : ', dbResponse);
+  // console.log('dbResponse : ', dbResponse);
   if (dbResponse.code) {
     return dbResponse;
   }

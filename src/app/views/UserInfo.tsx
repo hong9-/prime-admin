@@ -25,14 +25,15 @@ import {
 import CIcon from '@coreui/icons-react'
 import { cilUser } from '@coreui/icons'
 import { Role } from '@prisma/client'
-import { useSession } from 'next-auth/react'
+import { UserInfo } from 'app/store'
+import { useAppSelector } from 'app/hooks'
 
-const UserInfo = (props: any) => {
+const UserForm = (props: any) => {
   const {visible, onClose, onSubmit, onRemove, user} = props;
-  const { data } = useSession();
+  const userInfo: UserInfo = useAppSelector((state) => state.userInfo)
   const [currentUser, setCurrentUser] = useState();
   const [email, setEmail] = useState();
-  const [role, setRole] = useState(data?.user.role === Role.ADMIN ? Role.TM : Role.SALES);
+  const [role, setRole] = useState(userInfo.role === Role.ADMIN ? Role.TM : Role.SALES);
   const [name, setName] = useState();
   const [inited, setInited] = useState();
   
@@ -91,7 +92,7 @@ const UserInfo = (props: any) => {
               value={role}
               onChange={(e:any)=>setRole(e.target.value)}
             >
-              {data?.user.role === Role.TM ? null : <option value={Role.TM}>TM</option>}
+              {userInfo.role === Role.TM ? null : <option value={Role.TM}>TM</option>}
               <option value={Role.SALES}>SALES</option>
             </CFormSelect>
           </CInputGroup>
@@ -117,4 +118,4 @@ const UserInfo = (props: any) => {
   )
 }
 
-export default UserInfo;
+export default UserForm;

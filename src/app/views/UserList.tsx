@@ -89,9 +89,9 @@ const UserList = () => {
   user = _selectedUser;
 
   useEffect(()=> {
-    apiRequest('get', 'user').then(({ code, people: _people })=> {
+    apiRequest('get', 'user').then(({ code, people: _people, message })=> {
       if(code !== 0) {
-        alert('error');
+        alert('error: '+message);
         return;
       }
       if(_people)

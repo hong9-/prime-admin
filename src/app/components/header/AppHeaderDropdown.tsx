@@ -2,48 +2,36 @@
 
 import React, { useEffect } from 'react'
 import {
-  CAvatar,
-  CBadge,
   CDropdown,
-  CDropdownDivider,
   CDropdownHeader,
   CDropdownItem,
   CDropdownMenu,
   CDropdownToggle,
 } from '@coreui/react'
 import {
-  cilBell,
-  cilCreditCard,
-  cilCommentSquare,
-  cilEnvelopeOpen,
-  cilFile,
-  cilLockLocked,
-  cilSettings,
-  cilTask,
   cilUser,
   cilAccountLogout,
 } from '@coreui/icons'
 import CIcon from '@coreui/icons-react'
 
-import avatar8 from 'assets/images/avatars/8.jpg'
-import { SignInAuthorizationParams, signOut, useSession } from 'next-auth/react'
+import { signOut } from 'next-auth/react'
+import { UserInfo } from 'app/store'
+import { useAppSelector } from 'app/hooks'
 
 const AppHeaderDropdown = () => {
+  const user: UserInfo = useAppSelector((state) => state.userInfo)
   const onLogOut = async()=> {
     const result = await signOut({redirect: false});
     console.log(result);
   }
-
-  let { data: sessionData  } = useSession();
 
   useEffect(()=>{}, [])
 
   return (
     <CDropdown variant="nav-item">
       <CDropdownToggle  className="" caret={false}>
-        {sessionData?.user?.name+ '  '}
+        {user.name+ '  '}
         <CIcon icon={cilUser} className="md" />
-        {/* <CAvatar src={avatar8.src} size="md" /> */}
       </CDropdownToggle>
       <CDropdownMenu className="pt-0" >
         <CDropdownHeader className="bg-body-secondary fw-semibold mb-2">계정</CDropdownHeader>

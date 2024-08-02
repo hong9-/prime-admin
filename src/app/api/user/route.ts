@@ -15,6 +15,7 @@ export const GET = sessionHandler(async (prisma: PrismaClient, user: userInfo, b
           name: true,
           role: true,
           needPasswordReset: true,
+          isRemove: true,
         }
       }
     }

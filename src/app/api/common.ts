@@ -2,12 +2,13 @@ import { PrismaClient, Prisma } from '@prisma/client';
 import { auth } from 'auth';
 import { NextRequest, NextResponse } from 'next/server';
 
-const env: string = process.env.NODE_ENV || 'development';
-const prismaConfig: Prisma.PrismaClientOptions = {
-  log: env === 'development' ? ['query', 'info', 'warn', 'error'] : undefined
-}
-const prisma = new PrismaClient(prismaConfig);
+// const env: string = process.env.NODE_ENV || 'development';
+// const prismaConfig: Prisma.PrismaClientOptions = {
+//   log: env === 'development' ? ['query', 'info', 'warn', 'error'] : undefined
+// }
+// const prisma = new PrismaClient(prismaConfig);
 
+const prisma = new PrismaClient({});
 
 export interface ResponseBody {
   code: number,
@@ -16,7 +17,9 @@ export interface ResponseBody {
 export interface RequestBody {}
 
 export const sessionHandler = (customFunction: Function)=> {
+  // console.log('sessionHandler start');
   return async(req: NextRequest, context: { params: any })=>{
+    // console.log('sessionHandler async start');
     const session = await auth();
     if(session) {
       let data: any;

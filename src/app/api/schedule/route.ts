@@ -27,9 +27,13 @@ export const POST = sessionHandler(async (prisma: PrismaClient, user: userInfo, 
 
   const defaultSelect: Prisma.ScheduleSelect = {
     id: true,
+    company: true,
+    companyManager: true,
+    phone: true,
+    date: true,
     address: true,
     creatorId: true,
-    date: true,
+    note: true,
     result: true,
     manager: {
       select: {
@@ -68,11 +72,11 @@ export const POST = sessionHandler(async (prisma: PrismaClient, user: userInfo, 
 
   const userDefaultWhere: Prisma.ScheduleWhereInput = {
     AND: [{
+      isRemove: false
+    }, {
       OR: [{
         manager: {
-          some: {
             email: user.email,
-          }
         },
       }, {
         viewer: {
@@ -99,9 +103,7 @@ export const POST = sessionHandler(async (prisma: PrismaClient, user: userInfo, 
   if(filter) {
     if (filter.manager)
       filter.manager = {
-        some: {
-          email: filter.manager
-        }
+        email: filter.manager
       };
     if (filter.viewer)
       filter.viewer = {

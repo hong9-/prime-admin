@@ -28,6 +28,7 @@ export interface Worker {
   email: string,
   name: string,
   role: 'ADMIN'|'TM'|'SALES',
+  isRemoved: boolean,
 }
 
 export interface userInfo {
@@ -60,11 +61,12 @@ declare module "next-auth" {
   }
 }
  
-const env: string = process.env.NODE_ENV || 'development';
-const prismaConfig: Prisma.PrismaClientOptions = {
-  log: env === 'development' ? ['query', 'info', 'warn', 'error'] : undefined
-}
-const prisma = new PrismaClient(prismaConfig);
+// const env: string = process.env.NODE_ENV || 'development';
+// const prismaConfig: Prisma.PrismaClientOptions = {
+//   log: env === 'development' ? ['query', 'info', 'warn', 'error'] : undefined
+// }
+// const prisma = new PrismaClient(prismaConfig);
+const prisma = new PrismaClient({});
 
 const getUserFromDb = async(email:string) => {
   return await prisma.user.findUnique({

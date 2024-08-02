@@ -1,23 +1,32 @@
 import { userInfo } from "auth";
 import { apiRequest } from "./api/apiRequest";
 import { ScheduleResult } from "@prisma/client";
+import { CHeaderText } from "@coreui/react";
 
 export interface schedule {
-  id: string,
+  id: number,
   date: string,
+  company: string,
+  companyName: string,
+  phone: string,
   address: string,
+  note: string,
   result: 'NOTYET'|'CONTRACT'|'HOLD'|'NOTINTERESTED',
   creatorId: string,
   color?: string,
   title?: string,
-  manager: Array<userInfo>,
+  manager: userInfo,
   viewer: Array<userInfo>,
 }
 
 export interface scheduleDisplay {
-  id: string,
+  id: number,
   date: string,
+  company: string,
+  companyName: string,
+  phone: string,
   address: string,
+  note: string,
   result: 'NOTYET'|'CONTRACT'|'HOLD'|'NOTINTERESTED',
   creatorId: string,
   color?: string,
@@ -28,16 +37,16 @@ export interface scheduleDisplay {
 }
 
 export const colorSet = {
-  NOTYET: "55c",
-  CONTRACT: "#6c6", 
-  HOLD: "#999", 
+  NOTYET: "#39f", //"#55c",
+  CONTRACT: "#1b9e3e", //"#6c6", 
+  HOLD: "#6b7785", 
   NOTINTERESTED: "#f66"
 }
 
 export const colorSetBadge = {
   NOTYET: "info",
   CONTRACT: "success", 
-  HOLD: "light", 
+  HOLD: "secondary", 
   NOTINTERESTED: "danger"
 }
 
@@ -84,8 +93,8 @@ export const resultList: Array<ScheduleResult> = [
 export const scheduleToDisplay = (schedule: schedule)=> {
   return {
     ...schedule,
-    managerName: schedule.manager[0].name,
-    manager: schedule.manager[0].email,
+    managerName: schedule.manager.name,
+    manager: schedule.manager.email,
     viewer: schedule.viewer && schedule.viewer.length > 0 ? schedule.viewer.map((viewer)=>viewer.name).join(',') : undefined,
   };
 }
@@ -115,6 +124,7 @@ export interface scheduleSortParam {
 }
 
 export const getScheduleList = async(request: scheduleSortParam)=> {
+  // console.log('getScheduleList');
   const result = await apiRequest('post', 'schedule', request)
   const { code, total, pageMax, scheduleList } = result;
   if(code !== 0) {
@@ -129,3 +139,17 @@ export const getScheduleList = async(request: scheduleSortParam)=> {
   };
 }
 
+export const Dot = (props: any)=> {
+  const { color } = props
+  return (<svg width="36px" height="24px"><circle cx="12" cy="12" r="12" x="30" fill={color}></circle></svg>);
+}
+
+export const ColorLabel = ()=> {
+  return (<CHeaderText>
+    <span>방문 예정</span><Dot className="dot-for-label" color={colorSet[ScheduleResult.NOTYET]}/>
+    <span>계약</span><Dot className="dot-for-label" color={colorSet[ScheduleResult.CONTRACT]}/>
+    <span>보류</span><Dot className="dot-for-label" color={colorSet[ScheduleResult.HOLD]}/>
+    <span>무관심</span><Dot className="dot-for-label" color={colorSet[ScheduleResult.NOTINTERESTED]}/>
+  </CHeaderText>);
+}
+ 

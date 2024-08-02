@@ -29,10 +29,10 @@ body {
         width: 100px;
         height: 100px;
     }
-    .no-scroll-bar::-webkit-scrollbar {
-        // right: 0;
-        display: none;
-    }
+}
+.no-scroll-bar::-webkit-scrollbar {
+    // right: 0;
+    display: none;
 }
 .password-alert {
     &.invalid {

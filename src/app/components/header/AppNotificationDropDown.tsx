@@ -3,34 +3,21 @@
 import React, { useEffect } from 'react'
 import {
   CDropdown,
-  CDropdownHeader,
   CDropdownItem,
-  CDropdownItemPlain,
   CDropdownMenu,
   CDropdownToggle,
 } from '@coreui/react'
 import {
   cilBell,
-  cilCreditCard,
-  cilCommentSquare,
-  cilEnvelopeOpen,
-  cilFile,
-  cilLockLocked,
-  cilSettings,
-  cilTask,
-  cilUser,
-  cilAccountLogout,
   cilBellExclamation,
 } from '@coreui/icons'
 import CIcon from '@coreui/icons-react'
 
-import avatar8 from 'assets/images/avatars/8.jpg'
-import { SessionContextValue, signOut, useSession } from 'next-auth/react'
-import { Notification } from "app/store";
-import { CDropdownContext } from '@coreui/react/dist/esm/components/dropdown/CDropdown'
-import Link from 'next/link'
+import { Notification, UserInfo } from "app/store";
 import { useRouter } from 'next/navigation'
 import { apiRequest } from 'app/api/apiRequest'
+import { useAppSelector } from 'app/hooks'
+import { Role } from '@prisma/client'
 
 const exampleNotifications: Array<Notification> = [
   {
@@ -56,11 +43,11 @@ const exampleNotifications: Array<Notification> = [
   }
 ]
 const AppNotificationDropdown = () => {
-  const { data } = useSession();
+  const user: UserInfo = useAppSelector((state) => state.userInfo)
   const router = useRouter()
   useEffect(()=>{}, [])
 
-  const notiList:Array<Notification> = data?.user?.Notifications || exampleNotifications;
+  const notiList:Array<Notification> = user?.Notifications || exampleNotifications;
   const onClick = (noti: Notification)=>{
     console.log(noti);
     apiRequest('post', 'notification', {id: noti.id}).then(({code})=> {
@@ -70,13 +57,14 @@ const AppNotificationDropdown = () => {
     })
   }
 
+  if(user.role !== Role.ADMIN)
+    return <></>
   return (
     <CDropdown variant="nav-item">
       <CDropdownToggle  className="" caret={false} disabled={notiList.length === 0}>
         <CIcon icon={cilBell} size="lg" />
       </CDropdownToggle>
       <CDropdownMenu className="pt-0 notifications" >
-        {/* <CDropdownHeader className="bg-body-secondary fw-semibold mb-2">알림</CDropdownHeader> */}
         {notiList.map((noti: Notification, i: number)=> (
           <CDropdownItem
             key={i}

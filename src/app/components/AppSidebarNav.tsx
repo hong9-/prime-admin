@@ -1,5 +1,4 @@
 import React from 'react'
-import { NavLink } from 'react-router-dom'
 import PropTypes from 'prop-types'
 
 import SimpleBar from 'simplebar-react'
@@ -13,11 +12,13 @@ interface prop {
 }
 
 import Link from 'next/link'
-import { useSession } from 'next-auth/react'
+import { useAppSelector } from 'app/hooks'
+import { UserInfo } from 'app/store'
 
 export const AppSidebarNav = (props:prop) => {
-  const { data } = useSession();
   const { items } = props;
+  const user: UserInfo = useAppSelector((state) => state.userInfo)
+
   const navLink = (name: string, icon: string, badge: any, indent: boolean | undefined = false) => {
     return (
       <>
@@ -40,11 +41,17 @@ export const AppSidebarNav = (props:prop) => {
 
   const navItem = (item: any, index:number, indent = false) => {
     const { component, name, badge, icon, ...rest } = item
+    if (user.role === Role.SALES) {
+      console.log(user);
+      if (name === '직원관리')
+        return null;
+    }
+
     const Component = component
     return (
       <Component as="div" key={index}>
-        {(rest.to || rest.href) && (data?.user?.role === Role.ADMIN || !badge) ? (
-          <Link {...(rest.to && { as: NavLink })} {...rest}>
+        {(rest.to || rest.href) && (user.role === Role.ADMIN || !badge) ? (
+          <Link {...(rest.to && { as: CNavLink })} {...rest}>
             {navLink(name, icon, badge, indent)}
           </Link>
         ) : (

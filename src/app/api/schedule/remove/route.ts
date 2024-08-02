@@ -5,18 +5,13 @@ import { RequestBody, ResponseBody, sessionHandler } from 'app/api/common';
 export const POST = sessionHandler(async (prisma: PrismaClient, user: userInfo, body: RequestBody)=> {
   console.log('get body: ', body, user);
 
-  const { email } = body as any;
+  const { id } = body as any;
 
   
 
-  const dbResponse = await prisma.user.update({
+  const dbResponse = await prisma.schedule.update({
     where: {
-      email,
-      managers: {
-        some: {
-          email: user.email,
-        }
-      }
+      id
     },
     data: {
       isRemove: true,

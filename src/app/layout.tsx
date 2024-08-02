@@ -19,7 +19,9 @@ export default function RootLayout({
   return (
     <html lang="en">
       <body className={inter.className + ' no-scroll-bar'}>
-        <SessionProvider session={undefined} >
+        <SessionProvider
+          session={undefined}
+          refetchOnWindowFocus={false}>
           {children}
         </SessionProvider>
       </body>

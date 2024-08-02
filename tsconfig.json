@@ -23,6 +23,6 @@
       "@Auth/*": ["./src/*"]
     }
   },
-  "include": ["next-env.d.ts", "**/*.ts", "**/*.tsx", ".next/types/**/*.ts", "middleware.ts"],
+  "include": ["next-env.d.ts", "**/*.ts", "**/*.tsx", ".next/types/**/*.ts", "middleware.ts", "kakao.maps.d.ts"],
   "exclude": ["node_modules", "temp"]
 }

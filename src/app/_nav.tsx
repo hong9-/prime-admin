@@ -25,10 +25,10 @@ const _nav = [
     href: '/',
     className: 'nav-link',
     icon: <CIcon icon={cilSpeedometer} customClassName="nav-icon" />,
-    badge: {
-      color: 'info',
-      text: 'ADMIN',
-    },
+    // badge: {
+    //   color: 'info',
+    //   text: 'ADMIN',
+    // },
   },
   {
     component: CNavItem,

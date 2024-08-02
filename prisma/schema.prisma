@@ -19,11 +19,11 @@ model User {
   email             String?         @unique
   emailVerified     DateTime?
   image             String?
-
+  isRemove          Boolean         @default(false)
   // db for work
   role              Role
-  needPasswordReset Boolean
-  hash              String          @default("yo033lcrEG2PNL4W1-wkMun3BYCUxLXmpjQttMTDUIep2eHX5JzO8FrKH-yt9QE8NSYtPQF6utTU9qGYfeC_6w")
+  needPasswordReset Boolean         @default(true)
+  hash              String          @default("NOdl81FV8Fj7ttIkRIph9gD2aC8er02OxFpL2iwp1hpc3cLl5OuqrUj_3pMAxYGH1D2mmX1SDfD6bwZlLdj6jQ")
 
   Session           Session[]
   Account           Account?
@@ -32,8 +32,8 @@ model User {
 
   // db for work
   Notifications     Notification[]
-  Schedule          Schedule[]                              // as TM: 스케줄을 만들거나 관찰하는 사람.
-  WorkingSchedule   Schedule[]  @relation("WorkerSchedule")  // as SALES: 이행해야할 스케줄
+  Schedule          Schedule[]   @relation("Viewer")                           // as TM: 스케줄을 만들거나 관찰하는 사람.
+  WorkingSchedule   Schedule[]                              // as SALES: 이행해야할 스케줄
 
   createdAt         DateTime    @default(now())
   updatedAt         DateTime    @updatedAt
@@ -58,14 +58,18 @@ model Notification {
 
 model Schedule {
   id          Int  @id @default(autoincrement())
+  company     String
+  companyManager  String
+  phone       String
   date        DateTime
   address     String
   creatorId   String
-  note        String?
+  note        String?        @default("")
+  isRemove    Boolean        @default(false)
   result      ScheduleResult @default(NOTYET)
-
-  manager     User[]  @relation("WorkerSchedule") // 스케줄을 이행하고 결과를 반영하는 사람.
-  viewer      User[]                              // 스케줄을 관찰하고 결과를 지켜보는 사람 목록.
+  managerId   String
+  manager     User   @relation(fields: [managerId], references: [email]) // 스케줄을 이행하고 결과를 반영하는 사람.
+  viewer      User[]   @relation("Viewer")                           // 스케줄을 관찰하고 결과를 지켜보는 사람 목록.
   // creator User @relation(fields: [creatorId], references: [id])
 
   @@index([date, id, address, result])

@@ -1,57 +1,46 @@
 "use client";
 
 import "core-js";
-import React, { useEffect, useState, Suspense, useReducer, useRef } from 'react'
+import React, { useEffect, useState } from 'react'
 import {
   CButton,
   CCard,
   CCardBody,
   CCardHeader,
-  CCardGroup,
   CTable,
   CTableBody,
-  CTableCaption,
   CTableDataCell,
   CTableHead,
   CTableHeaderCell,
   CTableRow,
   CSpinner,
-  CCol,
-  CContainer,
-  CForm,
-  CFormInput,
   CInputGroup,
   CInputGroupText,
-  CRow,
-  CAlert,
   CBadge,
   CPagination,
   CPaginationItem,
   CCardFooter,
-  CFormLabel,
   CTooltip,
-  CPopover,
   CFormSelect,
+  CCardText,
+  CCardTitle,
+  CHeaderText,
 } from '@coreui/react'
 import CIcon from '@coreui/icons-react'
-import { cilArrowBottom, cilArrowTop, cilCalendar, cilLockLocked, cilPeople, cilPhone, cilUser } from '@coreui/icons'
-import { setServers } from "dns";
-import ScheduleInfo from "./ScheduleInfo";
-import { apiRequest } from "app/api/apiRequest";
-import { colorSetBadge, dateToForm, filter, getScheduleList, orderDirection, orderItem, resultList, resultMap, schedule, scheduleDisplay, scheduleSortParam, scheduleToDisplay } from "app/scheduleUtil";
-import { DatePicker, DateTimePicker, LocalizationProvider } from "@mui/x-date-pickers";
+import { cilArrowBottom, cilArrowTop, cilCalendar, cilPeople, cilPhone } from '@coreui/icons'
+import { ColorLabel, colorSetBadge, dateToForm, filter, getScheduleList, orderDirection, orderItem, resultList, resultMap, schedule, scheduleDisplay, scheduleSortParam, scheduleToDisplay } from "app/scheduleUtil";
+import { DatePicker, LocalizationProvider } from "@mui/x-date-pickers";
 import { AdapterDayjs } from "@mui/x-date-pickers/AdapterDayjs";
 import dayjs from "dayjs";
-import { table } from "console";
-import { useSession } from "next-auth/react";
 import { Role } from "@prisma/client";
-import { userInfo, Worker } from "auth";
+import { UserInfo } from "app/store";
+import { useAppSelector } from "app/hooks";
 
 let _modal: boolean = false;
 
 const headerList = [
   '일정ID',
-  '주소',
+  '상호',
   '일정',
   '담당TM',
   '담당영업',
@@ -66,8 +55,6 @@ const headerValue = [
   'result',
 ]
 const tableItemMax = 10;
-const defaultFromDate = dateToForm(new Date(0), dateToForm.NOHOUR);
-const defaultToDate = dateToForm(new Date(), dateToForm.NOHOUR);
 const month = 86400000 * 30;
 const rangeLength = [
   month * 12 + 86400000 * 5,
@@ -81,6 +68,8 @@ const rangeButtonNames = [
   '3개월',
   '1개월',
 ];
+const defaultToDate = dateToForm(new Date(), dateToForm.NOHOUR);
+const defaultFromDate = dateToForm(new Date(Date.now() - rangeLength[3]), dateToForm.NOHOUR);
 
 let total = 0;
 let pageMax = 0;
@@ -98,14 +87,11 @@ const ScheduleTable = () => {
   let [ tm, setTm ] = useState('');
   let [ result, setResult ] = useState('');
   let [ currentPage, setCurrentPage ] = useState(1 as number);
-  let [ from, setFrom ] = useState('' as string);
+  let [ from, setFrom ] = useState(defaultFromDate);
   let [ to, setTo ] = useState(defaultToDate);
   let [ range, setRange ] = useState(undefined as any);
-  let { data } = useSession();
-  let popoverRef = useRef(null);
-
-  // console.log(popoverRef);
-  // console.log(data?.user);
+  const user: UserInfo = useAppSelector((state) => state.userInfo)
+  // console.log(user);
 
   // pagination setting
   let minPage: number, maxPage: number;
@@ -157,7 +143,7 @@ const ScheduleTable = () => {
   )
 
   const handleClickHeader = (i: number)=> {
-    if(checkFilter(headerList[i]))
+    if(!checkFilter(headerList[i]))
       return;
 
     const target = headerValue[i];
@@ -191,18 +177,18 @@ const ScheduleTable = () => {
   const DrawHeader = ({index, value}: {index: number, value: string})=> {
     let optionList;
     // console.log(headerValue[key], headerList[key])
-    // console.log(data?.user?.workers)
+    // console.log(user?.workers)
     let formValue, setState;
     if(value === '담당영업') {
       formValue = sales;
       setState = setSales;
-      optionList = data?.user?.workers?.filter((worker)=>worker.role === Role.SALES)?.map((item: any, i)=>
+      optionList = user?.workers?.filter((worker)=>worker.role === Role.SALES)?.map((item: any, i)=>
         <option key={i} value={item.email}>{item.name}</option>
       )
     } else if (value === '담당TM') {
       formValue = tm;
       setState = setTm;
-      optionList = data?.user?.workers?.filter((worker)=>worker.role === Role.TM).map((item: any, i)=>
+      optionList = user?.workers?.filter((worker)=>worker.role === Role.TM).map((item: any, i)=>
         <option key={i} value={item.email}>{item.name}</option>
       )
     } else if (value === '상태') {
@@ -265,11 +251,12 @@ const ScheduleTable = () => {
     <>
       <LocalizationProvider
         dateAdapter={AdapterDayjs}
-        adapterLocale='ko'
+        adapterLocale="ko"
       >
         <CCard className="mb-4">
           <CCardHeader>
-            <strong>계약 관리</strong>
+            <CCardTitle style={{display: 'inline-block'}}><strong>계약 관리</strong></CCardTitle>
+            <CHeaderText style={{float: 'right'}}><ColorLabel /></CHeaderText>
           </CCardHeader>
           <CCardBody>
             <CTable >
@@ -316,7 +303,7 @@ const ScheduleTable = () => {
                   return (
                     <CTableRow key={i}>
                       <CTableDataCell>{schedule.id}</CTableDataCell>
-                      <CTableDataCell>{schedule.address}</CTableDataCell>
+                      <CTableDataCell>{schedule.company}</CTableDataCell>
                       <CTableDataCell>{dateToForm(new Date(schedule.date), dateToForm.NOHOUR)}</CTableDataCell>
                       <CTableDataCell>{schedule.viewer} <CIcon icon={cilPhone}/></CTableDataCell>
                       <CTableDataCell>{schedule.managerName} <CIcon icon={cilPeople}/></CTableDataCell>
