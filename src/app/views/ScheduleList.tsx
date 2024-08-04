@@ -4,7 +4,7 @@ import "core-js";
 import FullCalendar from "@fullcalendar/react";
 import dayGridPlugin from '@fullcalendar/daygrid'
 import interactionPlugin from "@fullcalendar/interaction"
-import React, { ChangeEvent, useEffect, useRef, useState } from 'react'
+import React, { useEffect, useRef, useState } from 'react'
 import {
   CCard,
   CCardHeader,
@@ -12,13 +12,8 @@ import {
   CCardText,
   CCardTitle,
   CFormSelect,
-  CHeaderToggler,
-  CForm,
   CCollapse,
-  CInputGroupText,
   CButton,
-  CButtonGroup,
-  CButtonToolbar,
   CInputGroup,
   CDropdownToggle,
   CHeaderText,
@@ -26,7 +21,7 @@ import {
 import ScheduleInfo from "./ScheduleInfo";
 import { apiRequest } from "app/api/apiRequest";
 import { CalendarApi } from "@fullcalendar/core/index.js";
-import { usePathname } from "next/navigation";
+import { usePathname, useRouter } from "next/navigation";
 import {
   schedule,
   colorSet,
@@ -39,13 +34,8 @@ import {
   scheduleDisplay,
   resultList,
   resultMap,
-  Dot,
-  colorSetBadge,
 } from "app/scheduleUtil"
-import CIcon from "@coreui/icons-react";
-import { cilCircle, cilMediaRecord } from "@coreui/icons";
-import { getColor } from "@coreui/utils";
-import { Role, ScheduleResult } from "@prisma/client";
+import { Role } from "@prisma/client";
 import { useAppSelector } from "app/hooks";
 import { UserInfo } from "app/store";
 
@@ -54,22 +44,22 @@ const ScheduleList = () => {
   let location = usePathname();
   let idMatch = location.match(/Schedule(?:List|Table)\/(\d+)/);
   let id = idMatch ? parseInt(idMatch[1]) : undefined;
+  let route = useRouter();
 
   let doubleClick: Date | boolean = false;
   let [ events, setEvents ] = useState<Array<any>>();
-  let [ schedule, setSchedule ] = useState({} as scheduleDisplay|{date: string, id: undefined}|{});
+  let [ schedule, setSchedule ] = useState(null as scheduleDisplay|{date: string, id: undefined}|null);
   let [ modal, setModal ] = useState(_modal);
   let [ range, setRange ] = useState({from: new Date(0), to: new Date(0)})
   let [ needRefresh, setNeedRefresh ] = useState(false);
   let [ filter, setFilter ] = useState({} as filter);
-  let [ filterToggle, setFilterToggle ] = useState(true);
+  let [ filterToggle, setFilterToggle ] = useState(false);
   let [ sales, setSales ] = useState('');
   let [ tm, setTm ] = useState('');
   let [ result, setResult ] = useState('');
   let calendarRef = useRef(null);
+  let { current } = calendarRef;
   const user: UserInfo = useAppSelector((state) => state.userInfo)
-
-  console.log('range.from: ', range.from.getTime())
 
   const onDateClick = (event: any)=> {
     if(doubleClick && doubleClick === event.date.toISOString()) {
@@ -98,7 +88,6 @@ const ScheduleList = () => {
   }
 
   const onEventSubmit = (_schedule:schedule, modify?: boolean)=> {
-    console.log(schedule);
     let request:{[x:string]:any} = {};
     let requestUrl = 'schedule/'
     if(modify) {
@@ -132,34 +121,37 @@ const ScheduleList = () => {
     })
   }
 
-  let calendarTool: CalendarApi = (calendarRef.current as any)?.calendar;
   const onCalendarButton = (e: MouseEvent)=> {
     let buttonName: 'prev'|'next' = (e.currentTarget as HTMLElement).title as 'prev'|'next';
-    calendarTool[buttonName]();
-    calendarTool && setRange({
-      from: calendarTool?.view.activeStart as Date,
-      to: calendarTool?.view.activeEnd as Date,
-    })
+    let calendarTool: CalendarApi = (current as any)?.calendar;
+    if(calendarTool) {
+      calendarTool[buttonName]();
+      calendarTool && setRange({
+        from: calendarTool?.view.activeStart as Date,
+        to: calendarTool?.view.activeEnd as Date,
+      })
+    }
     return true;
   }
 
   const handleFilterChange = (e: any)=> {
-    console.log(filter)
-    console.log(e.target.name, e.target.value);
-    const nextFilter = {
-      ...filter,
-    }
     setFilter({
       ...filter,
       [e.target.name]: e.target.value ? e.target.value : undefined,
     })
-    console.log(filter)
+  }
+
+  const resetFilter = ()=> {
+    setFilter({
+      manager: undefined,
+      worker: undefined,
+      result: undefined,
+    });
   }
 
   useEffect(()=> {
-    console.log('실행됨', range, needRefresh);
-    if(!range.from.getTime() && calendarRef.current) {
-      calendarTool = (calendarRef.current as any)?.calendar;
+    let calendarTool: CalendarApi = (current as any)?.calendar;
+    if(!range.from.getTime() && calendarTool) {
       setRange({
         from: calendarTool.view.activeStart as Date,
         to: calendarTool.view.activeEnd as Date,
@@ -168,8 +160,12 @@ const ScheduleList = () => {
     let prms = [];
     if(range.from.getTime()) {
       if(id) {
-        prms.push(getSchedule(id).then(({schedule})=> {
-          setSchedule(scheduleToDisplay(schedule));
+        prms.push(getSchedule(id).then((schedule)=> {
+          if(schedule) {
+            setSchedule(scheduleToDisplay(schedule));
+            _modal = true;
+            setModal(true);
+          }
         }));
       }
 
@@ -190,6 +186,7 @@ const ScheduleList = () => {
     prms.reduce((prevPrms, current) => {
       return prevPrms.then(()=>current);
     }, Promise.resolve())
+    // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [range, filter, needRefresh]);
 
   return (
@@ -236,20 +233,20 @@ const ScheduleList = () => {
                   onChange={handleFilterChange}
                 >
                   <option value="">일정 상태</option>
-                  {resultList.map((result)=>
-                    <option color="primary" value={result}>
+                  {resultList.map((result, i)=>
+                    <option key={i} color="primary" value={result}>
                       {resultMap[result]}
                     </option>
                   )}
                 </CFormSelect>
-                <CButton color="primary" onClick={(e)=>setFilter({} as filter)}>필터 초기화</CButton>
+                <CButton color="primary" onClick={resetFilter}>필터 초기화</CButton>
               </CInputGroup>
             </CCollapse>
           </CCardText>
           <CCardText></CCardText>
           <FullCalendar
             ref={calendarRef}
-            // height={"100vh"}
+            height={"100vh"}
             // themeSystem="bootstrap5"
             plugins={[
               dayGridPlugin,
@@ -257,17 +254,17 @@ const ScheduleList = () => {
             ]}
             eventDisplay="block"
             weekends={true}
-            loading={(isLoading)=>{console.log(isLoading)}}
             events={events}
             dateClick={onDateClick}
             eventClick={onEventClick}
+            dayCellDidMount={()=> {setNeedRefresh(true)}}
+            
             titleFormat={{
               month: 'numeric',
               day: 'numeric',
             }}
             navLinks={false}
             titleRangeSeparator="~"
-            // eventChange={(evt)=>console.log(evt)}
             customButtons={{
               postUser: {
                 text: '일정등록',
@@ -301,7 +298,11 @@ const ScheduleList = () => {
         schedule={schedule}
         onSubmit={onEventSubmit}
         onRemove={onEventRemove}
-        onClose={()=>{_modal = false;setModal(false);setSchedule({})}}
+        onClose={()=>{
+          _modal = false;
+          setModal(false);
+          setSchedule(null);
+        }}
       />
     </>
   )

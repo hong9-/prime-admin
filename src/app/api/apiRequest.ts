@@ -20,7 +20,6 @@ export const apiRequest = async(
     },
     body: (type === 'post' && data) ? JSON.stringify(data) : undefined,
   }).catch((e)=> {
-    console.log(e);
     return {
       status: 500,
       statusText: 'server down',
@@ -29,8 +28,6 @@ export const apiRequest = async(
       },
     }
   });
-
-  console.log(response);
 
   if(response.status === 200) {
     const result = await response.text();
@@ -43,7 +40,6 @@ export const apiRequest = async(
       }
     }
   } else {
-    console.log(`status ${response.status}: ${response.statusText}`);
     const result = await response.text();
 
     try {

@@ -128,23 +128,8 @@ export const POST = sessionHandler(async (prisma: PrismaClient, user: userInfo, 
     take: from && to && !orderItem ? undefined : tableItemMax,
     skip: from && to && !orderItem ? undefined : currentAmount,
   }
-  console.log(select);
   const schedules = await prisma.schedule.findMany(select)
   
-  console.log(`total: ${total} founds.`);
-  // if(filterItem && filterItem !== 'worker' && filterItem !== 'manager')
-  //   defaultWhere[filterItem] = filterValue;
-  // else if(orderItem) {
-
-  // }
-    
-  // const scheduleList = await prisma.schedule.findMany({
-  //   select: defaultSelect,
-  //   orderBy: defaultOrder,
-  //   take: 10,
-  //   skip: currentAmount, 
-  // });
-  // console.log(scheduleList);
   return {
     code: 0,
     total,

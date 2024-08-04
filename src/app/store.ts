@@ -41,7 +41,6 @@ export interface UserInfo {
 const changeState = (state = initialState, { type, ...rest }: nextState) => {
   switch (type) {
     case 'set':
-      console.log({ ...state, ...rest });
       return { ...state, ...rest }
     default:
       return state
@@ -53,7 +52,6 @@ export const makeStore = () => {
   // let _store = configureStore({
   //   reducer: {}
   // });
-  // console.log(store, _store)
   // return createStore(changeState);
   return configureStore({
     reducer: changeState

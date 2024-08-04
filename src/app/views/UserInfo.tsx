@@ -47,10 +47,9 @@ const UserForm = (props: any) => {
     }
   }, [currentUser, user])
 
-  console.log(role);
   return (
     <>
-      <CModal visible={visible}>
+      <CModal visible={visible} backdrop="static" onClose={onClose}>
         <CModalHeader>
           <CModalTitle>Modal title</CModalTitle>
         </CModalHeader>

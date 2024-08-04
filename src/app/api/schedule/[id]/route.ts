@@ -6,7 +6,7 @@ type Params = {
   id: string,
 }
 
-export const GET = sessionHandler(async (prisma: PrismaClient, user: userInfo, body: RequestBody, context: { params: Params} )=> {
+export const POST = sessionHandler(async (prisma: PrismaClient, user: userInfo, body: RequestBody, context: { params: Params} )=> {
   let { id } = context.params;
   let idAsNumber = parseInt(id);
 
@@ -20,6 +20,9 @@ export const GET = sessionHandler(async (prisma: PrismaClient, user: userInfo, b
           id: idAsNumber,
         },
         select: {
+          company: true,
+          companyManager: true,
+          phone: true,
           address: true,
           date: true,
           note: true,
@@ -38,6 +41,9 @@ export const GET = sessionHandler(async (prisma: PrismaClient, user: userInfo, b
           id: idAsNumber,
         },
         select: {
+          company: true,
+          companyManager: true,
+          phone: true,
           address: true,
           date: true,
           note: true,

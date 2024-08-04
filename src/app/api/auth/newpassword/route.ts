@@ -6,8 +6,6 @@ import { saltAndHash } from 'utils/password';
 export const POST = sessionHandler(async (prisma: PrismaClient, user: userInfo, body: RequestBody)=> {
 
   try {
-    console.log('get body: ', body, user);
-  
     const { newPassword, confirmPassword } = body as any;
 
     if (!newPassword || !confirmPassword) {
@@ -18,7 +16,6 @@ export const POST = sessionHandler(async (prisma: PrismaClient, user: userInfo, 
     }
 
     const hash: string = await saltAndHash(newPassword);
-    console.log('saltAndHash: ', hash);
 
     let result = await prisma.user.update({
       where: {
@@ -29,7 +26,6 @@ export const POST = sessionHandler(async (prisma: PrismaClient, user: userInfo, 
         needPasswordReset: false,
       },
     });
-    console.log(result);
     //session 갱신
 
     return {

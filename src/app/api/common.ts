@@ -17,9 +17,7 @@ export interface ResponseBody {
 export interface RequestBody {}
 
 export const sessionHandler = (customFunction: Function)=> {
-  // console.log('sessionHandler start');
   return async(req: NextRequest, context: { params: any })=>{
-    // console.log('sessionHandler async start');
     const session = await auth();
     if(session) {
       let data: any;
@@ -38,7 +36,6 @@ export const sessionHandler = (customFunction: Function)=> {
           return 'nono';
         });
       } else {
-        console.log('405: 1405', req.method);
         return new NextResponse(JSON.stringify({
           code: 1405,
           message: "올바르지 않은 요청입니다.",
@@ -52,9 +49,7 @@ export const sessionHandler = (customFunction: Function)=> {
       
       try {
         responseData = await customFunction(prisma, session.user, data, context);
-        // console.log('response success', responseData);
       } catch(e: unknown) {
-        console.log('catch in responseData', e);
         responseData = e as ResponseBody;
         if(responseData.code) {
           status = responseData.code - 1000;

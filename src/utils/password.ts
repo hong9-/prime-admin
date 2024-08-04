@@ -6,7 +6,6 @@ export const saltAndHash = async(pw: string)=> {
 
 export const validatePassword = async(pw: string, compare: string)=> {
   const hash = await saltAndHash(pw);
-  console.log(hash,'\n\t+', compare)
   return hash === compare;
 }
 

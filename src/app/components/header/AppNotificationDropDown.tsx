@@ -18,6 +18,7 @@ import { useRouter } from 'next/navigation'
 import { apiRequest } from 'app/api/apiRequest'
 import { useAppSelector } from 'app/hooks'
 import { Role } from '@prisma/client'
+import { useSession } from 'next-auth/react'
 
 const exampleNotifications: Array<Notification> = [
   {
@@ -45,13 +46,15 @@ const exampleNotifications: Array<Notification> = [
 const AppNotificationDropdown = () => {
   const user: UserInfo = useAppSelector((state) => state.userInfo)
   const router = useRouter()
+  let { update } = useSession();
+
   useEffect(()=>{}, [])
 
   const notiList:Array<Notification> = user?.Notifications || exampleNotifications;
   const onClick = (noti: Notification)=>{
-    console.log(noti);
     apiRequest('post', 'notification', {id: noti.id}).then(({code})=> {
       if(code === 0) {
+        update();
         router.push(noti.link);
       }
     })

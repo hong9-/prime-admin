@@ -7,29 +7,18 @@ import {
   CCard,
   CCardBody,
   CCardHeader,
-  CCardGroup,
   CTable,
   CTableBody,
-  CTableCaption,
   CTableDataCell,
   CTableHead,
   CTableHeaderCell,
   CTableRow,
   CSpinner,
-  CCol,
-  CContainer,
-  CForm,
-  CFormInput,
-  CInputGroup,
-  CInputGroupText,
-  CRow,
-  CAlert,
   CCardFooter,
-  CCardText,
   CCardTitle,
 } from '@coreui/react'
 import CIcon from '@coreui/icons-react'
-import { cilLockLocked, cilPeople, cilPhone, cilUser } from '@coreui/icons'
+import { cilPeople, cilPhone } from '@coreui/icons'
 import UserInfo from "./UserInfo";
 import { apiRequest } from "app/api/apiRequest";
 
@@ -38,46 +27,8 @@ interface person {
   name: string,
   role: string,
   needPasswordReset: boolean,
+  isRemove: boolean,
 }
-
-const examplePeople: Array<person> = [
-  {
-    email: 'tm001',
-    name: '김모씨',
-    role: 'TM',
-    needPasswordReset: false,
-  },
-  {
-    email: 'tm002',
-    name: '이모씨',
-    role: 'TM',
-    needPasswordReset: true,
-  },
-  {
-    email: 'tm003',
-    name: '박모씨',
-    role: 'TM',
-    needPasswordReset: false,
-  },
-  {
-    email: 'sales001',
-    name: '최모씨',
-    role: 'SALE',
-    needPasswordReset: false,
-  },
-  {
-    email: 'sales002',
-    name: '정모씨',
-    role: 'SALE',
-    needPasswordReset: false,
-  },
-  {
-    email: 'sales003',
-    name: '홍모씨',
-    role: 'SALE',
-    needPasswordReset: false,
-  },
-]
 
 let _modal: boolean = false;
 let _selectedUser: any = undefined;
@@ -137,10 +88,10 @@ const UserList = () => {
   }
 
   const onUserAdd = (user: any)=> {
-    console.log('useradd', user);
+    if(!user.email || !user.role || !user.name)
+      return alert("ID, 이름, 직원 항목은 필수값입니다.");
     apiRequest('post', 'user/create', user).then((result)=> {
       const { code, message } = result as any;
-      console.log(result);
       if(code) return alert('생성 실패' + JSON.stringify(message));
       alert('등록 성공');
       setListChanged(++listChanged);
@@ -148,7 +99,6 @@ const UserList = () => {
     setModal(false);
   }
 
-  // console.log('render check', modal, user, _selectedUser, people);
   return (
     <>
       <CCard className="mb-4">
@@ -175,6 +125,7 @@ const UserList = () => {
             </CTableHead>
             <CTableBody>
               {people ? people.map((person, i)=> {
+                if (person.isRemove) return null;
                 return (
                   <CTableRow key={i}>
                     <CTableDataCell onClick={()=>onUserClick(person)}>{person.email}</CTableDataCell>
@@ -186,7 +137,7 @@ const UserList = () => {
                       }
                     </CTableDataCell>
                     <CTableDataCell>{!person.needPasswordReset ? <CButton color="primary" onClick={()=>onPasswordInitClick(person.email)}>재설정</CButton> : null}</CTableDataCell>
-                    <CTableDataCell><CButton color="danger" variant="outline" onClick={()=>onUserRemove(person.email)}>삭제</CButton></CTableDataCell>
+                    <CTableDataCell>{!person.isRemove ? <CButton color="danger" variant="outline" onClick={()=>onUserRemove(person.email)}>삭제</CButton> : null}</CTableDataCell>
                   </CTableRow>
                 )
               }):

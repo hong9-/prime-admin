@@ -200,7 +200,6 @@ export const POST = sessionHandler(async (prisma: PrismaClient, user: userInfo, 
     const currentWeekTotal = await prisma.schedule.count({
       where: defaultWhere
     });
-    console.log(      currentWeekTotal)    
     defaultWhere.date = {
       gt: new Date(lastWeekStart),
       lt: new Date(lastWeekEnd),
@@ -231,13 +230,6 @@ export const POST = sessionHandler(async (prisma: PrismaClient, user: userInfo, 
     const todayTotal = await prisma.schedule.count({
       where: defaultWhere
     });
-
-    console.log(
-      todayTotal,
-      yesterdayTotal,
-      currentWeekTotal,
-      lastWeekTotal,
-    );
 
     return {
       code: 0,

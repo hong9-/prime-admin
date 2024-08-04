@@ -16,7 +16,6 @@ const App = () => {
 
   useEffect(() => {
     if(data?.user) {
-      console.log('dispatch', data?.user);
       dispatch({ type: 'set', userInfo: data?.user })
     }
 
@@ -30,6 +29,7 @@ const App = () => {
     }
 
     setColorMode(storedTheme)
+    // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [])
 
   return (

@@ -57,12 +57,7 @@ const CreatePassword = () => {
         newPassword,
         confirmPassword,
       });
-      console.log(result);
-      // need redirect
-      // navigate('/Login');
       update();
-    } else {
-      console.log('onsubmit', event, newPassword, confirmPassword, validate)
     }
   };
 
@@ -139,9 +134,6 @@ const CreatePassword = () => {
                         </CButton>
                       </CCol>
                       <CCol xs={6} className="text-right">
-                        {/* <CButton color="link" className="px-0">
-                          Forgot password?
-                        </CButton> */}
                       </CCol>
                     </CRow>
                   </CForm>

@@ -35,6 +35,8 @@ import dayjs from "dayjs";
 import { Role } from "@prisma/client";
 import { UserInfo } from "app/store";
 import { useAppSelector } from "app/hooks";
+import ScheduleInfo from "./ScheduleInfo";
+import { apiRequest } from "app/api/apiRequest";
 
 let _modal: boolean = false;
 
@@ -79,7 +81,7 @@ const checkFilter = (header: string)=> ['담당TM', '담당영업', '상태'].in
 const ScheduleTable = () => {
   let [ modal, setModal ] = useState(_modal);
   let [ scheduleList, setScheduleList ] = useState([] as Array<scheduleDisplay>)
-  let [ schedule, setSchedule ] = useState({} as schedule)
+  let [ schedule, setSchedule ] = useState(null as scheduleDisplay|{date: string, id: undefined}|null)
   let [ orderItem, setOrderItem] = useState('date' as orderItem);
   let [ orderDirection, setOrderDirection ] = useState('desc' as orderDirection);
   let [ filter, setFilter ] = useState({} as filter);
@@ -91,7 +93,6 @@ const ScheduleTable = () => {
   let [ to, setTo ] = useState(defaultToDate);
   let [ range, setRange ] = useState(undefined as any);
   const user: UserInfo = useAppSelector((state) => state.userInfo)
-  // console.log(user);
 
   // pagination setting
   let minPage: number, maxPage: number;
@@ -118,14 +119,12 @@ const ScheduleTable = () => {
       total = result?.total;
       pageMax = result?.pageMax;
       const scheduleList: Array<schedule> = result?.scheduleList;
-      console.log(scheduleList);
       setScheduleList(scheduleList.map((schedule)=> scheduleToDisplay(schedule)));
     });
   }, [orderItem, orderDirection, filter, range, currentPage]);
 
   const onCloseModal = ()=> {
     _modal = false;
-    // setUser(undefined);
     setModal(false);
   }
 
@@ -137,7 +136,6 @@ const ScheduleTable = () => {
       color="primary"
       onClick={()=> {
         setFrom(dateToForm(new Date(Date.now() - rangeLength[i]), dateToForm.NOHOUR));
-        // console.log(dateToForm(now));
       }}
     >{rangeButtonName}</CButton>
   )
@@ -151,7 +149,6 @@ const ScheduleTable = () => {
       setOrderDirection(orderDirection === 'desc' ? 'asc' : 'desc');
     setOrderItem(headerValue[i] as orderItem);
 
-    console.log(headerValue[i])
   }
 
   const handleDatePickerChange = (e: any, b: any)=> {
@@ -174,10 +171,13 @@ const ScheduleTable = () => {
     setRange(undefined);
   }
 
+  const handleRowClick = (schedule: scheduleDisplay)=> {
+    setSchedule(schedule);
+    _modal = true;setModal(true);
+  }
+
   const DrawHeader = ({index, value}: {index: number, value: string})=> {
     let optionList;
-    // console.log(headerValue[key], headerList[key])
-    // console.log(user?.workers)
     let formValue, setState;
     if(value === '담당영업') {
       formValue = sales;
@@ -201,7 +201,6 @@ const ScheduleTable = () => {
       setState = ()=>{};
     }
 
-    // console.log(optionList)
     if(!optionList) return (<>Error</>)
 
     return (<>
@@ -224,22 +223,6 @@ const ScheduleTable = () => {
             setFilter(nextState);
             setCurrentPage(1);
           }
-          // filterItem, filterValue
-          // if(orderItem === target)
-          //   setOrderDirection(orderDirection === 'desc' ? 'asc' : 'desc');
-          // setOrderItem(headerValue[i] as orderItem);
-
-          // if(e.target.value === '') {
-          //   setFilterValue('');
-          // } else {
-          //   setFilterItem(headerValue[index] as filterItem);
-          // }
-          // setFilterValue(e.target.value);
-          // setFilterItem(headerValue[index] as filterItem);
-          console.log(e.target.value);
-          // setFilterValue(e.target.value);
-          // setFilterItem(headerValue[index])
-          console.log(headerValue[index]);
         }}
       >
         <option value={""}>{headerList[index]}</option>
@@ -301,7 +284,7 @@ const ScheduleTable = () => {
                 {
                 scheduleList ? scheduleList.map((schedule, i)=> {
                   return (
-                    <CTableRow key={i}>
+                    <CTableRow key={i} onClick={()=>handleRowClick(schedule)}>
                       <CTableDataCell>{schedule.id}</CTableDataCell>
                       <CTableDataCell>{schedule.company}</CTableDataCell>
                       <CTableDataCell>{dateToForm(new Date(schedule.date), dateToForm.NOHOUR)}</CTableDataCell>
@@ -381,12 +364,12 @@ const ScheduleTable = () => {
             </CPagination>
           </CCardFooter>
         </CCard>
-        {/* <ScheduleInfo
+        <ScheduleInfo
           visible={modal}
           schedule={schedule}
-          onSubmit={()=>console.log('onSubmit')}
-          onClose={()=>{_modal = false;setModal(false);setSchedule({} as schedule)}}
-        /> */}
+          onSubmit={()=>{}}
+          onClose={()=>{_modal = false;setModal(false);setSchedule(null)}}
+        />
       </LocalizationProvider>
     </>
   )

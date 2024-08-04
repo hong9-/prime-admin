@@ -22,7 +22,6 @@ const AppHeaderDropdown = () => {
   const user: UserInfo = useAppSelector((state) => state.userInfo)
   const onLogOut = async()=> {
     const result = await signOut({redirect: false});
-    console.log(result);
   }
 
   useEffect(()=>{}, [])

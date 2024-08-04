@@ -65,7 +65,6 @@ const formDefault: form = {
   result: resultList[0], //
 }
 
-console.log(process.env.KAKAO_SDK_KEY);
 const kakaoKey: string = process.env.KAKAO_SDK_KEY || "18e5eed79170a888a460e63b085421a3";
 let loadFireMap = false;
 const loadKakaoMap = ()=> new Promise<any>((resolve, reject) => {
@@ -99,7 +98,6 @@ const loadKakaoSDK = async()=>{
 const ScheduleInfo = (props:any) => {
   const { visible, onClose, onSubmit, onRemove, schedule } = props;
   const [ currentSchedule, setCurrentSchedule ] = useState();
-  // console.log(test);
   const [ form, setForm ] = useState(formDefault as form);
   const [ addressSoftModal, setAddressSoftModal ] = useState(false)
   const [ needRefresh, setNeedRefresh ] = useState(false);
@@ -113,7 +111,6 @@ const ScheduleInfo = (props:any) => {
     ]);
   }
   
-  // console.log(workers);
   let currentSales: Array<UserInfo> = workers || [{
     email: 'abcde',
     name: '박과장',
@@ -129,34 +126,21 @@ const ScheduleInfo = (props:any) => {
   }];
 
   useEffect(()=> {
-    // console.log(schedule);
-    // if(schedule) {
-      // console.log("changed", schedule)
-      // setId(schedule ? schedule.id : "");
     if(schedule) {
-      console.log('schedule 있다');
       let newForm: {[x:string]: any} = {};
       for(let key in schedule) {
-        console.log(key, schedule[key]);
         if(schedule[key])
           newForm[key] = schedule[key]
       }
-      console.log(newForm);
       setForm({
         ...(newForm as form),
       });
     } else {
-      console.log('schedule 없다');
       setForm({
         ...formDefault,
       })
     }
-    // setCurrentSchedule(schedule);
-    // } else {
-      // console.log("Not changed");
-    // }
-  }, [/*currentSchedule, */schedule])
-  // console.log(date);
+  }, [schedule])
   
   const onModalClose = ()=> {
     setForm({
@@ -168,22 +152,16 @@ const ScheduleInfo = (props:any) => {
     setAddressSoftModal(false);
   }
   const onScheduleSubmit = (event: FormEvent)=> {
-    console.log(event);
     onSubmit(event);
     setForm({
       ...formDefault
     });
-    // setForm(schedule && schedule.address || "");
-    // setForm(schedule && schedule.manager || "");
-    // setForm(schedule && schedule.result || resultList[0]);
 }
 
   const onScheduleRemove = ()=> {
 
   }
   const handleAddress = (_address: Address)=> {
-    // console.log(_address)
-    // _address.address
     onAddressModalClose();
     if(_address.address)
       setForm({...form, address: _address.address});
@@ -199,13 +177,12 @@ const ScheduleInfo = (props:any) => {
 
   const handleChange = (e: ChangeEvent)=> {
     const { name, value } = e?.target as any;
-    console.log(name, value, form);
-    if(value)
+    if(typeof value === 'string')
       setForm({...form, [name]: value})
   }
 
   const handleMaskChange = (phone:string, mask: MaskPropsKeys, e: InputEvent)=> {
-    if(phone)
+    if(typeof phone === 'string')
       setForm({...form, phone})
   }
 
@@ -240,17 +217,13 @@ const ScheduleInfo = (props:any) => {
         <CIcon icon={icon} />
       </CInputGroupText>
   )};
-  // const CFormInputWithMask = IMaskMixin(({ inputRef, ...props }) => (
-  //   <CFormInput {...props} ref={inputRef} />
-  // ))
-  // console.log(manager, result);
   return (
     <>
       <LocalizationProvider
         dateAdapter={AdapterDayjs}
         adapterLocale="ko"
       >
-        <CModal visible={visible} onClose={onModalClose}>
+        <CModal visible={visible} backdrop="static" onClose={onModalClose}>
           <CModalHeader>
             <CModalTitle>일정상세</CModalTitle>
           </CModalHeader>

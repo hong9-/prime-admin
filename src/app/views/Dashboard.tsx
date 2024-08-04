@@ -84,7 +84,6 @@ interface customWidgetProp {
 }
 
 const CustomWidget = ({ color, label, pointLabel, showDot, graphLabel, graphData, fill, ...props }: customWidgetProp & CWidgetStatsAProps)=> {
-  console.log(props);
   return (<CWidgetStatsA
     color={color}
     value={
@@ -199,13 +198,6 @@ const Dashboard = () => {
         todayTotal,
       } = res;
 
-      console.log(
-        currentWeekTotal,
-        lastWeekTotal,
-        yesterdayTotal,
-        todayTotal,
-      )
-
       if(code) {
         return alert()
       }
@@ -219,7 +211,6 @@ const Dashboard = () => {
         yesterdayTotal,
         todayTotal,
       })
-      console.log(res);
     });
   }, [])
 

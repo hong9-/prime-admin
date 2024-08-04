@@ -3,7 +3,6 @@ import { userInfo } from 'auth';
 import { RequestBody, ResponseBody, sessionHandler } from 'app/api/common';
 
 export const GET = sessionHandler(async (prisma: PrismaClient, user: userInfo, body: RequestBody)=> {
-  console.log('get body: ', body, user);
   const { workers: people } = await prisma.user.findUnique({
     where: {
       email: user.email
@@ -20,7 +19,6 @@ export const GET = sessionHandler(async (prisma: PrismaClient, user: userInfo, b
       }
     }
   }) as any;
-  console.log('userList: ', people);
 
   // let { people: people} = person;
   return {

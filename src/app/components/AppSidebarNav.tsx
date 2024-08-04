@@ -42,7 +42,6 @@ export const AppSidebarNav = (props:prop) => {
   const navItem = (item: any, index:number, indent = false) => {
     const { component, name, badge, icon, ...rest } = item
     if (user.role === Role.SALES) {
-      console.log(user);
       if (name === '직원관리')
         return null;
     }

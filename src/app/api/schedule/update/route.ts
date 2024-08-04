@@ -16,7 +16,6 @@ const paramList = [
 ]
 
 export const POST = sessionHandler(async (prisma: PrismaClient, user: userInfo, body: RequestBody)=> {
-  console.log('get body: ', body, user);
   const creatorId = user.email;
   const {
     id,
@@ -31,14 +30,26 @@ export const POST = sessionHandler(async (prisma: PrismaClient, user: userInfo, 
     result,
   } = body as any;
 
+  if (id === '' ||
+    company === '' ||
+    companyManager === '' ||
+    phone === '' ||
+    address === '' ||
+    date === '') {
+    return {
+      code: 1403,
+      message: '아이디, 상호, 담당자, 연락처, 일정 등은 값이 있어야 합니다.'
+    }
+  }
   let data = {} as any;
   paramList.map((key)=> {
     if(key === 'manager' && manager) {
       data.manager = {connect: [{ email: manager }]};
     } else if(key === 'viewer' && viewer) {
       data.viewer = {connect: [{ email: viewer }]};
-    } else if((body as {[x:string]: string})[key])
+    } else if((body as {[x:string]: string})[key] || key === 'note') {
       (data as {[x:string]: string})[key] = (body as {[x:string]: string})[key]
+    }
   });
 
   const dbResponse = await prisma.schedule.update({
@@ -48,7 +59,6 @@ export const POST = sessionHandler(async (prisma: PrismaClient, user: userInfo, 
     data,
   });
 
-  console.log(dbResponse);
   return {
     code: 0,
   }

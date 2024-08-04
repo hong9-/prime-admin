@@ -3,11 +3,7 @@ import { userInfo } from 'auth';
 import { RequestBody, ResponseBody, sessionHandler } from 'app/api/common';
 
 export const POST = sessionHandler(async (prisma: PrismaClient, user: userInfo, body: RequestBody)=> {
-  console.log('get body: ', body, user);
-
   const { email } = body as any;
-
-  
 
   const dbResponse = await prisma.user.update({
     where: {
@@ -28,7 +24,6 @@ export const POST = sessionHandler(async (prisma: PrismaClient, user: userInfo, 
     }
   });
 
-  console.log(dbResponse);
   return {
     code: 0,
   }

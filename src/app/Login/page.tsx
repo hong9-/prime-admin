@@ -44,31 +44,19 @@ const Login = () => {
   const onSubmit:FormEventHandler = async(event:FormEvent)=> {
     event.preventDefault();
     event.preventDefault();
-    // let { userId, password } = event.target as any;
-    // userId = userId.value;
-    // password = password.value;
-    console.log(`event 막혔나?1`, event.isDefaultPrevented());
     try {
-      console.log(`event 막혔나?2`, event.isDefaultPrevented());
-      console.log(event);
       const hello = await sign(userId, pw);
-      console.log(hello);
       setCheckPassword(true);
       if(validationTimeoutId)
         clearTimeout(validationTimeoutId);
       validationTimeoutId = setTimeout(()=> {
         setCheckPassword(false);
       }, 3000);
-      console.log('sign done');
     } catch(e) {
-      console.log('error: ', e)
+      // console.log('error: ', e)
     }
 
     event.preventDefault();
-    // return false;
-    // console.log('onsubmit', event, userId, password)
-    // navigate('/');
-    // return event;
   };
 
   const onChange = (event:ChangeEvent)=> {
@@ -77,7 +65,6 @@ const Login = () => {
     setter[calleeName](target.value);
   }
 
-  console.log(`CheckPassword: ${checkPassword}`);
   return (
     <div className="bg-body-tertiary min-vh-100 d-flex flex-row align-items-center">
       <CContainer>

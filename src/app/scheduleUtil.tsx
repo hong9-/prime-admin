@@ -124,7 +124,6 @@ export interface scheduleSortParam {
 }
 
 export const getScheduleList = async(request: scheduleSortParam)=> {
-  // console.log('getScheduleList');
   const result = await apiRequest('post', 'schedule', request)
   const { code, total, pageMax, scheduleList } = result;
   if(code !== 0) {

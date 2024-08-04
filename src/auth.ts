@@ -81,7 +81,6 @@ export const { handlers, signIn, signOut, auth } = NextAuth({
   ...authConfig,
   callbacks: {
     async session({ session, token, user }) {
-      console.log('get session: ', session.user);
       let _user;
       if(!user) {
         try {
@@ -136,17 +135,22 @@ export const { handlers, signIn, signOut, auth } = NextAuth({
         try {
           user = await getUserFromDb(credentials.id);
         } catch(e) {
-          console.log('user error or no user', e);
+          // console.log('user error or no user', e);
+        }
+        
+        if(user.isRemove) {
+          return null;
         }
 
         if(!user) {
-          console.log('No user');
+          // console.log('No user');
           // const start = Date.now();
           // const pwHash = await saltAndHash(credentials.password);
           // console.log(pwHash, Date.now() - start);
           return user;
         }
-        console.log('User: ', user);
+
+        // console.log('User: ', user);
 
         let { hash } = await prisma.user.findUnique({
           where: {
@@ -157,15 +161,15 @@ export const { handlers, signIn, signOut, auth } = NextAuth({
           }
         }) || {hash:''};
 
-        console.log('hash : ', hash);
+        // console.log('hash : ', hash);
 
-        console.log('start validating!!!!!!!!!!!!!!!!!!!!\n\t', hash)
+        // console.log('start validating!!!!!!!!!!!!!!!!!!!!\n\t', hash)
         if(await validatePassword(credentials.password, hash)) {
-          console.log(`user.email: ${user.email} validating true`)
-          if(user.needPasswordReset) {
-            console.log("Need initialize password!!!");
-            return user;
-          }
+          // console.log(`user.email: ${user.email} validating true`)
+          // if(user.needPasswordReset) {
+          //   console.log("Need initialize password!!!");
+          //   return user;
+          // }
 
           return user;
         }
