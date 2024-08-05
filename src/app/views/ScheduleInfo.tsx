@@ -67,7 +67,9 @@ const formDefault: form = {
 
 const kakaoKey: string = process.env.KAKAO_SDK_KEY || "18e5eed79170a888a460e63b085421a3";
 let loadFireMap = false;
+let loadFireNavi = false;
 const loadKakaoMap = ()=> new Promise<any>((resolve, reject) => {
+  return resolve((window as any).kakao);
   if(loadFireMap)
     return resolve((window as any).kakao as any);
   if (typeof window !== "undefined") {
@@ -80,17 +82,16 @@ const loadKakaoMap = ()=> new Promise<any>((resolve, reject) => {
           reject(e);
       };
       script.src = `https://dapi.kakao.com/v2/maps/sdk.js?appkey=${kakaoKey}&libraries=services`;
-      script.integrity =
-          "sha384-TiCUE00h649CAMonG018J2ujOgDKW/kVWlChEuu4jK2vxfAAD0eZxzCKakxg55G4";
-      script.crossOrigin = "anonymous";
       document.head.appendChild(script);
   }
   return resolve({})
 });
 
 const loadKakaoSDK = async()=>{
-  if(!window.Kakao)
+  if(!window.Kakao && !loadFireNavi) {
+    loadFireNavi = true;
     await initKakao(kakaoKey);
+  }
   return window.Kakao;
 }
 
@@ -111,20 +112,6 @@ const ScheduleInfo = (props:any) => {
     ]);
   }
   
-  let currentSales: Array<UserInfo> = workers || [{
-    email: 'abcde',
-    name: '박과장',
-    role: 'sales',
-  }, {
-    email: 'fghij',
-    name: '김대리',
-    role: 'sales',
-  }, {
-    email: 'klmno',
-    name: '이대리',
-    role: 'sales',
-  }];
-
   useEffect(()=> {
     if(schedule) {
       let newForm: {[x:string]: any} = {};
@@ -156,11 +143,8 @@ const ScheduleInfo = (props:any) => {
     setForm({
       ...formDefault
     });
-}
-
-  const onScheduleRemove = ()=> {
-
   }
+
   const handleAddress = (_address: Address)=> {
     onAddressModalClose();
     if(_address.address)
@@ -197,6 +181,7 @@ const ScheduleInfo = (props:any) => {
       // let kakao = (window as any).kakao;
       let geocoder = new KakaoMap.maps.services.Geocoder();
         geocoder.addressSearch(form.address, (result: any, status: any)=> {
+          if(result.length === 0) return alert('주소가 올바르지 않습니다. 주소를 확인해주세요.');
             Kakao.Navi.share({
               name: result[0].address_name,
               x: parseFloat(result[0].x) as any,
