@@ -18,9 +18,7 @@ import CIcon from '@coreui/icons-react'
 import { cilUser, cilCalendar, cilAddressBook, cilCheck, cilCopy, cilNotes, cilPhone, cilPeople } from '@coreui/icons'
 import {
   DateTimePicker,
-  DateTimeValidationError,
   LocalizationProvider,
-  PickerChangeHandlerContext,
 } from '@mui/x-date-pickers'
 import { AdapterDayjs } from '@mui/x-date-pickers/AdapterDayjs';
 import dayjs from 'dayjs'
@@ -46,7 +44,6 @@ interface form {
 }
 
 const isPhone = ()=> {
-  const phoneRegex = /iPhone|Android/;
   return navigator.userAgent.toString().match(/iPhone|Android/);
 }
 
@@ -68,21 +65,24 @@ const formDefault: form = {
 const kakaoKey: string = process.env.KAKAO_SDK_KEY || "18e5eed79170a888a460e63b085421a3";
 let loadFireMap = false;
 let loadFireNavi = false;
+
 const loadKakaoMap = ()=> new Promise<any>((resolve, reject) => {
-  return resolve((window as any).kakao);
-  if(loadFireMap)
+  if(loadFireMap) {
     return resolve((window as any).kakao as any);
+  }
   if (typeof window !== "undefined") {
-      loadFireMap = true;
-      var script = document.createElement("script");
-      script.onload = function () {
-          resolve((window as any).kakao as any);
-      };
-      script.onerror = (e) => {
-          reject(e);
-      };
-      script.src = `https://dapi.kakao.com/v2/maps/sdk.js?appkey=${kakaoKey}&libraries=services`;
-      document.head.appendChild(script);
+    loadFireMap = true;
+    var script = document.createElement("script");
+    script.onload = function () {
+      (window as any).kakao.maps.load(()=> {
+        resolve((window as any).kakao as any);
+      })
+    };
+    script.onerror = (e) => {
+        reject(e);
+    };
+    script.src = `https://dapi.kakao.com/v2/maps/sdk.js?appkey=${kakaoKey}&libraries=services&autoload=false`;
+    document.head.appendChild(script);
   }
   return resolve({})
 });

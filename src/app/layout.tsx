@@ -24,7 +24,6 @@ export default function RootLayout({
           refetchOnWindowFocus={false}>
           {children}
         </SessionProvider>
-        <script type="text/javascript" src="https://dapi.kakao.com/v2/maps/sdk.js?appkey=18e5eed79170a888a460e63b085421a3&libraries=services"></script>
       </body>
     </html>
   );
