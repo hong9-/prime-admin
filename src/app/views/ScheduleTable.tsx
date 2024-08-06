@@ -34,7 +34,7 @@ import { AdapterDayjs } from "@mui/x-date-pickers/AdapterDayjs";
 import dayjs from "dayjs";
 import { Role } from "@prisma/client";
 import { UserInfo } from "app/store";
-import { useAppSelector } from "app/hooks";
+import { useAppDispatch, useAppSelector } from "app/hooks";
 import ScheduleInfo from "./ScheduleInfo";
 import { apiRequest } from "app/api/apiRequest";
 
@@ -79,20 +79,26 @@ let pageMax = 0;
 const checkFilter = (header: string)=> ['담당TM', '담당영업', '상태'].indexOf(header) === -1
 
 const ScheduleTable = () => {
+  const defaultFilter = useAppSelector((state) => state.filter) // 테마 store.tsx
+
   let [ modal, setModal ] = useState(_modal);
   let [ scheduleList, setScheduleList ] = useState([] as Array<scheduleDisplay>)
   let [ schedule, setSchedule ] = useState(null as scheduleDisplay|{date: string, id: undefined}|null)
   let [ orderItem, setOrderItem] = useState('date' as orderItem);
   let [ orderDirection, setOrderDirection ] = useState('desc' as orderDirection);
-  let [ filter, setFilter ] = useState({} as filter);
-  let [ sales, setSales ] = useState('');
-  let [ tm, setTm ] = useState('');
-  let [ result, setResult ] = useState('');
+  let [ filter, setFilter ] = useState(defaultFilter || {} as filter);
   let [ currentPage, setCurrentPage ] = useState(1 as number);
   let [ from, setFrom ] = useState(defaultFromDate);
   let [ to, setTo ] = useState(defaultToDate);
   let [ range, setRange ] = useState(undefined as any);
   const user: UserInfo = useAppSelector((state) => state.userInfo)
+  const dispatch = useAppDispatch();
+
+  if(defaultFilter) {
+    console.log('reset dispatch');
+    dispatch({ type: 'set', filter: undefined});
+  }
+  console.log(defaultFilter, filter);
 
   // pagination setting
   let minPage: number, maxPage: number;
@@ -112,6 +118,7 @@ const ScheduleTable = () => {
       orderItem,
       orderDirection,
       filter,
+      // filter: defaultFilter || filter,
       currentAmount: (currentPage - 1) * tableItemMax,
       from: range?.from,
       to: range?.to,
@@ -180,26 +187,31 @@ const ScheduleTable = () => {
     let optionList;
     let formValue, setState;
     if(value === '담당영업') {
-      formValue = sales;
-      setState = setSales;
+      formValue = filter.manager || '';
+      // formValue = sales;
+      // setState = setFilter;
       optionList = user?.workers?.filter((worker)=>worker.role === Role.SALES)?.map((item: any, i)=>
         <option key={i} value={item.email}>{item.name}</option>
       )
     } else if (value === '담당TM') {
-      formValue = tm;
-      setState = setTm;
+      formValue = filter.viewer || '';
+      // formValue = tm;
+      // setState = setTm;
       optionList = user?.workers?.filter((worker)=>worker.role === Role.TM).map((item: any, i)=>
         <option key={i} value={item.email}>{item.name}</option>
       )
     } else if (value === '상태') {
-      formValue = result;
-      setState = setResult;
+      formValue = filter.result || '';
+      // formValue = result;
+      // setState = setResult;
       optionList = resultList.map((item, i)=>
         <option key={i} value={item}>{resultMap[item]}</option>
       )
     } else {
       setState = ()=>{};
     }
+    // formValue = '';
+    // setState = '';
 
     if(!optionList) return (<>Error</>)
 
@@ -212,17 +224,17 @@ const ScheduleTable = () => {
             ...filter
           };
           
+
           if(e.target.value === '') {
             nextState[headerValue[index]] = undefined;
-            setState(e.target.value);
-            setFilter(nextState);
-            setCurrentPage(1);
           } else {
             nextState[headerValue[index]] = e.target.value;
-            setState(e.target.value);
-            setFilter(nextState);
-            setCurrentPage(1);
           }
+          nextState[headerValue[index]] = e.target.value === '' ? undefined : e.target.value;
+          // setState(e.target.value);
+          // defaultFilter ? 
+          setFilter(nextState);
+          setCurrentPage(1);
         }}
       >
         <option value={""}>{headerList[index]}</option>

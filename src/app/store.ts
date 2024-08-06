@@ -5,6 +5,7 @@ export interface state {
   sidebarShow: boolean,
   theme: string,
   userInfo: UserInfo,
+  filter: storeFilter | undefined,
 }
 
 const initialState:state = {
@@ -15,7 +16,11 @@ const initialState:state = {
     name: '',
     role: '',
   },
+  filter: undefined,
 }
+
+export type storeFilterItem = 'manager'|'viewer'|'result';
+export interface storeFilter {[key: 'manager'|'viewer'|'result'|string]: any};
 
 export interface Notification {
   id: string,
@@ -26,7 +31,7 @@ export interface Notification {
 
 export interface nextState {
   type: string,
-  [key: string]: string,
+  [key: string]: string | UserInfo,
 }
 
 export interface UserInfo {

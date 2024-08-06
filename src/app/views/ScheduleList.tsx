@@ -45,21 +45,21 @@ const ScheduleList = () => {
   let idMatch = location.match(/Schedule(?:List|Table)\/(\d+)/);
   let id = idMatch ? parseInt(idMatch[1]) : undefined;
   let route = useRouter();
+  const defaultFilter = useAppSelector((state) => state.filter) // 테마 store.tsx
 
+  console.log(defaultFilter);
   let doubleClick: Date | boolean = false;
   let [ events, setEvents ] = useState<Array<any>>();
   let [ schedule, setSchedule ] = useState(null as scheduleDisplay|{date: string, id: undefined}|null);
   let [ modal, setModal ] = useState(_modal);
   let [ range, setRange ] = useState({from: new Date(0), to: new Date(0)})
   let [ needRefresh, setNeedRefresh ] = useState(false);
-  let [ filter, setFilter ] = useState({} as filter);
+  let [ filter, setFilter ] = useState(defaultFilter || {} as filter);
   let [ filterToggle, setFilterToggle ] = useState(false);
-  let [ sales, setSales ] = useState('');
-  let [ tm, setTm ] = useState('');
-  let [ result, setResult ] = useState('');
   let calendarRef = useRef(null);
   let { current } = calendarRef;
   const user: UserInfo = useAppSelector((state) => state.userInfo)
+
 
   const onDateClick = (event: any)=> {
     if(doubleClick && doubleClick === event.date.toISOString()) {
@@ -172,7 +172,7 @@ const ScheduleList = () => {
       prms.push(getScheduleList({
         from: dateToForm(range.from, dateToForm.WITHHOUR),
         to: dateToForm(range.to, dateToForm.WITHHOUR),
-        filter,
+        filter: defaultFilter || filter,
       }).then((result: any)=> {
         if(result.code) return alert('error: ' + result.message)
         const scheduleList: Array<schedule> = result?.scheduleList;

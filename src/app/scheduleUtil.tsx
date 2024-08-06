@@ -2,6 +2,7 @@ import { userInfo } from "auth";
 import { apiRequest } from "./api/apiRequest";
 import { ScheduleResult } from "@prisma/client";
 import { CHeaderText } from "@coreui/react";
+import { storeFilter, storeFilterItem } from "./store";
 
 export interface schedule {
   id: number,
@@ -110,10 +111,10 @@ export const getSchedule = async(id: number|string)=> {
   return schedule;
 }
 
-export type filterItem = 'manager'|'worker'|'result';
+export type filterItem = storeFilterItem;
 export type orderItem = 'id'|'address'|'date'|'result';
 export type orderDirection = "desc"|"asc"|undefined;
-export type filter = {[key: 'manager'|'worker'|'result'|string]: any};
+export type filter = storeFilter;
 export interface scheduleSortParam {
   orderItem?: orderItem,
   orderDirection?: orderDirection,

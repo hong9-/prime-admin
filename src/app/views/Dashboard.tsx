@@ -50,7 +50,9 @@ import { apiRequest } from 'app/api/apiRequest'
 import { CWidgetStatsAProps } from '@coreui/react/dist/esm/components/widgets/CWidgetStatsA'
 import { Role } from '@prisma/client'
 import { UserInfo } from 'app/store'
-import { useAppSelector } from 'app/hooks'
+import { useAppDispatch, useAppSelector, useAppStore } from 'app/hooks'
+import { filter } from 'app/scheduleUtil'
+import { useRouter } from 'next/navigation'
 
 // import avatar1 from 'app/assets/images/avatars/1.jpg'
 // import avatar2 from 'app/assets/images/avatars/2.jpg'
@@ -162,6 +164,7 @@ const CustomWidget = ({ color, label, pointLabel, showDot, graphLabel, graphData
 const InfoCard = ({color, icon, values, ...props}: {color: string, icon: string[], values: Array<{title: string, value: number|string}>, [x:string]: any})=>(
   <CCol sm={6} xl={4} xxl={3}>
     <CWidgetStatsD
+      {...props}
       className="mb-4"
       color={color}
       icon={<CIcon icon={icon} height={52} className="my-4 text-white" />}
@@ -181,8 +184,10 @@ const Dashboard = () => {
     lastWeekTotal: 0,
     yesterdayTotal: 0,
     todayTotal: 0,
-});
+  });
+  const router = useRouter();
   const user: UserInfo = useAppSelector((state) => state.userInfo)
+  const dispatch = useAppDispatch();
 
   useEffect(()=> {
     apiRequest('post', 'summary', {}).then((res)=> {
@@ -214,11 +219,26 @@ const Dashboard = () => {
     });
   }, [])
 
+  const handleClickCard = (name?: string)=> {
+    if(name) {
+      let manager = user?.workers?.find((worker)=>worker.name === name && worker.role === Role.SALES)
+      let viewer = user?.workers?.find((worker)=>worker.name === name && worker.role === Role.TM)
+      if(manager || viewer) {
+        dispatch({ type: 'set', filter: {
+          manager: manager?.email,
+          viewer: viewer?.email,
+        }})
+      }
+    }
+
+    router.push('/Schedule'+(user?.role === Role.ADMIN ? 'Table' : 'List'));
+  }
+
   if(user.role === Role.ADMIN) {
     return (
       <>
         <CCard>
-          <CCardHeader><CCardText><h5><strong>일주일</strong> 단위 요약</h5></CCardText></CCardHeader>
+          <CCardHeader><CCardTitle><strong>일주일</strong> 단위 요약</CCardTitle></CCardHeader>
           <CCardBody>
             <CRow className="mb-4" xs={{ gutter: 4 }}>
               
@@ -270,7 +290,7 @@ const Dashboard = () => {
           </CCardBody>
         </CCard>
         <CCard>
-          <CCardHeader><CCardText><h5>최근 <strong>한 달</strong> 단위로 요약해서 보여줍니다.</h5></CCardText></CCardHeader>
+          <CCardHeader><CCardTitle>최근 <strong>한 달</strong> 단위로 요약해서 보여줍니다.</CCardTitle></CCardHeader>
           <CCardBody>
             <CRow className="mb-4" xs={{ gutter: 4 }}>
               <CCol sm={6} xl={4} xxl={3}>
@@ -329,20 +349,13 @@ const Dashboard = () => {
           <CCardBody>
             <CRow className="mb-4" xs={{ gutter: 4 }}>
               <InfoCard
-                  color="warning"
-                  icon={cilHandshake}
-                  values={[
-                    {title: '지난 주', value: info.lastWeekInfo.salesMax?.name},
-                    {title: '계약', value: info.lastWeekInfo.salesMax?.number}
-                  ]}
-              />
-              <InfoCard
-                color="danger"
-                icon={cilCalendarCheck}
+                color="warning"
+                icon={cilHandshake}
                 values={[
-                  {title: '지난 주', value: info.lastWeekInfo.tmMax?.name},
-                  {title: '일정 등록', value: info.lastWeekInfo.tmMax?.number}
+                  {title: '지난 주', value: info.lastWeekInfo.salesMax?.name},
+                  {title: '계약', value: info.lastWeekInfo.salesMax?.number}
                 ]}
+                onClick={()=>handleClickCard(info.lastWeekInfo.salesMax.name)}
               />
               <InfoCard
                 color="warning"
@@ -351,6 +364,16 @@ const Dashboard = () => {
                   {title: '지난 달', value: info.lastMonthInfo.salesMax?.name},
                   {title: '계약', value: info.lastMonthInfo.salesMax?.number}
                 ]}
+                onClick={()=>handleClickCard(info.lastMonthInfo.salesMax.name)}
+              />
+              <InfoCard
+                color="danger"
+                icon={cilCalendarCheck}
+                values={[
+                  {title: '지난 주', value: info.lastWeekInfo.tmMax?.name},
+                  {title: '일정 등록', value: info.lastWeekInfo.tmMax?.number}
+                ]}
+                onClick={()=>handleClickCard(info.lastWeekInfo.tmMax.name)}
               />
               <InfoCard
                 color="danger"
@@ -359,6 +382,7 @@ const Dashboard = () => {
                   {title: '지난 달', value: info.lastMonthInfo.tmMax?.name},
                   {title: '일정 등록', value: info.lastMonthInfo.tmMax?.number}
                 ]}
+                onClick={()=>handleClickCard(info.lastMonthInfo.tmMax.name)}
               />
             </CRow>
           </CCardBody>
@@ -377,6 +401,7 @@ const Dashboard = () => {
               {title: '오늘', value: info.todayTotal},
               {title: '어제', value: info.yesterdayTotal},
             ]}
+            onClick={()=>handleClickCard()}
           />
           <InfoCard
             color="primary"
@@ -385,6 +410,7 @@ const Dashboard = () => {
               {title: '이번 주', value: info.currentWeekTotal},
               {title: '지난 주', value: info.lastWeekTotal},
             ]}
+            onClick={()=>handleClickCard()}
           />
         </CRow>
       </CCardBody>
@@ -401,6 +427,7 @@ const Dashboard = () => {
               {title: '오늘', value: info.todayTotal},
               {title: '어제', value: info.yesterdayTotal},
             ]}
+            onClick={()=>handleClickCard()}
           />
           <InfoCard
             color="primary"
@@ -409,6 +436,7 @@ const Dashboard = () => {
               {title: '이번 주', value: info.currentWeekTotal},
               {title: '지난 주', value: info.lastWeekTotal},
             ]}
+            onClick={()=>handleClickCard()}
           />
         </CRow>
       </CCardBody>
