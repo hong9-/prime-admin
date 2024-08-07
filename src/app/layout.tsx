@@ -17,7 +17,20 @@ export default function RootLayout({
   children: React.ReactNode;
 }>) {
   return (
-    <html lang="en">
+    <html lang="ko-kr">
+      <head>
+        <link rel="apple-touch-icon" href="/icons/icon-512x512.png"></link>
+        <link rel="apple-touch-startup-icon" href="/icons/icon-512x512.png"/>
+        <link rel="manifest" href="/manifest.json" />
+        <meta name="application-name" content="프라임 관리" />
+        <meta name="mobile-web-app-capable" content="yes" />
+        <meta name="apple-mobile-web-app-capable" content="yes" />
+        <meta name="apple-mobile-web-app-status-bar-style" content="default" />
+        <meta name="apple-mobile-web-app-title" content="프라임 관리" />
+        <meta name="description" content="프라임 관리 페이지" />
+        <meta name="mobile-web-app-capable" content="yes" />
+        <script type="text/javascript" src="/addWorker.js" async />
+      </head>
       <body className={inter.className + ' no-scroll-bar'}>
         <SessionProvider
           session={undefined}

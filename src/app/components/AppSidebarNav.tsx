@@ -1,4 +1,4 @@
-import React from 'react'
+import React, { useEffect, useRef, useState } from 'react'
 import PropTypes from 'prop-types'
 
 import SimpleBar from 'simplebar-react'
@@ -14,11 +14,50 @@ interface prop {
 import Link from 'next/link'
 import { useAppSelector } from 'app/hooks'
 import { UserInfo } from 'app/store'
+import { eventListeners } from '@popperjs/core'
+
+interface deferredPrompt {
+  prompt: Function,
+}
+interface newWindow {
+  appInstalled?: boolean,
+  deferredPrompt: deferredPrompt,
+}
 
 export const AppSidebarNav = (props:prop) => {
   const { items } = props;
+  let window = (global as newWindow & Window & typeof globalThis);
   const user: UserInfo = useAppSelector((state) => state.userInfo)
+  const deferredPrompt = useRef<any>(null);
+  const [ installed, setInstalled ] = useState(window.appInstalled);
 
+  useEffect(()=>{
+    if(!installed) {
+      const handler = ()=> {
+        setInstalled(true);
+        console.log('app installed');
+        window.removeEventListener('appinstalled', handler)
+      }
+      window.addEventListener('appinstalled', handler)
+    }
+  }, [])
+
+  const handleInstallClick = () => {
+    deferredPrompt.current = window.deferredPrompt;
+    if (deferredPrompt.current) {
+      deferredPrompt.current.prompt();
+  
+      deferredPrompt.current.userChoice.then((choiceResult: any) => {
+        if (choiceResult.outcome === 'accepted') {
+          console.log('User accepted the A2HS prompt');
+          deferredPrompt.current = null;
+        } else {
+          console.log('User dismissed the A2HS prompt');
+        }
+      });
+    }
+  };
+  
   const navLink = (name: string, icon: string, badge: any, indent: boolean | undefined = false) => {
     return (
       <>
@@ -54,7 +93,7 @@ export const AppSidebarNav = (props:prop) => {
             {navLink(name, icon, badge, indent)}
           </Link>
         ) : (
-          null
+          <CNavLink hidden={installed} onClick={handleInstallClick}>{navLink(name, icon, badge, indent)}</CNavLink>
         )}
       </Component>
     )

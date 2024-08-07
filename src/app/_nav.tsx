@@ -15,6 +15,7 @@ import {
   cilCalendar,
   cilPeople,
   cilList,
+  cilMobile,
 } from '@coreui/icons'
 import { CNavGroup, CNavItem, CNavTitle } from '@coreui/react'
 
@@ -54,6 +55,12 @@ const _nav = [
     href: '/UserList',
     className: 'nav-link',
     icon: <CIcon icon={cilPeople} customClassName="nav-icon" />,
+  },
+  {
+    component: CNavItem,
+    name: '홈 화면에 추가',
+    className: 'nav-link',
+    icon: <CIcon icon={cilMobile} customClassName="nav-icon" />,
   },
 ]
 
