@@ -19,30 +19,8 @@ import { apiRequest } from 'app/api/apiRequest'
 import { useAppSelector } from 'app/hooks'
 import { Role } from '@prisma/client'
 import { useSession } from 'next-auth/react'
+import { dateToForm } from 'app/scheduleUtil'
 
-const exampleNotifications: Array<Notification> = [
-  {
-    id: '1234',
-    message: '알림내용 짤븡거',
-    link: 'http://localhost',
-    confirmed: true,
-  }, {
-    id: '5678',
-    message: '알림내용 긴거긴거긴거긴거 긴거긴거긴거긴거 긴거긴거긴거긴거 긴거긴거긴거긴거 긴거긴거긴거긴거',
-    link: 'http://localhost',
-    confirmed: false,
-  }, {
-    id: '9012',
-    message: '알림내용 긴거긴거긴거긴거긴거긴거긴거긴거긴거긴거긴거긴거긴거긴거긴거긴거긴거긴거긴거긴거긴거긴거긴거긴거',
-    link: 'http://localhost',
-    confirmed: true,
-  }, {
-    id: '3456',
-    message: '알림내용 짤븡거',
-    link: 'http://localhost',
-    confirmed: false,
-  }
-]
 const AppNotificationDropdown = () => {
   const user: UserInfo = useAppSelector((state) => state.userInfo)
   const router = useRouter()
@@ -50,7 +28,7 @@ const AppNotificationDropdown = () => {
 
   useEffect(()=>{}, [])
 
-  const notiList:Array<Notification> = user?.Notifications || exampleNotifications;
+  const notiList:Array<Notification> = user?.Notifications || [];
   const onClick = (noti: Notification)=>{
     apiRequest('post', 'notification', {id: noti.id}).then(({code})=> {
       if(code === 0) {
@@ -76,7 +54,7 @@ const AppNotificationDropdown = () => {
           >
             <CIcon icon={noti.confirmed ? cilBellExclamation : cilBell } className="me-2" />
             {noti.message}
-            <div className="notification-timestamp">2012/03/05 07:35</div>
+            <div className="notification-timestamp">{dateToForm(new Date(noti.createdAt), dateToForm.WITHHOUR)}</div>
           </CDropdownItem>
         ))}
       </CDropdownMenu>

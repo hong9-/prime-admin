@@ -27,6 +27,7 @@ export interface Notification {
   message: string,
   link: string,
   confirmed: boolean,
+  createdAt: string,
 }
 
 export interface nextState {
