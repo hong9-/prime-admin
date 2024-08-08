@@ -1,4 +1,4 @@
-import { PrismaClient } from '@prisma/client';
+import { PrismaClient, ScheduleResult } from '@prisma/client';
 import { userInfo } from 'auth';
 import { RequestBody, ResponseBody, sessionHandler } from 'app/api/common';
 
@@ -57,8 +57,25 @@ export const POST = sessionHandler(async (prisma: PrismaClient, user: userInfo, 
       id,
     },
     data,
+    select: {
+      id,
+      manager: {
+        select: {
+          name: true,
+        }
+      }
+    }
   });
 
+  if(result === ScheduleResult.CONTRACT) {
+    const notificationResponse = await prisma.notification.create({
+      data: {
+        message: `${dbResponse.manager.name} 계약 체결 완료`,
+        link: `/ScheduleList/${dbResponse.id}`,
+        userId: 'admin001',
+      }
+    })
+  }
   return {
     code: 0,
   }

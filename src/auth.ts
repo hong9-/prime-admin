@@ -89,7 +89,12 @@ export const { handlers, signIn, signOut, auth } = NextAuth({
               email: session.user.email,
             },
             select: {
-              Notifications: true,
+              Notifications: {
+                orderBy: {
+                  id: 'desc',
+                },
+                take: 10,
+              },
               role: true,
               needPasswordReset: true,
               managers: {
