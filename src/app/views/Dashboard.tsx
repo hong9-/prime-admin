@@ -230,8 +230,9 @@ const Dashboard = () => {
         }})
       }
     }
-
-    router.push('/Schedule'+(user?.role === Role.ADMIN ? 'Table' : 'List'));
+    setTimeout(()=> {
+      router.push('/Schedule'+(user?.role === Role.ADMIN ? 'Table' : 'List'));
+    }, 100);
   }
 
   if(user.role === Role.ADMIN) {

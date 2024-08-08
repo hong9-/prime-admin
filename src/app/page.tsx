@@ -8,8 +8,6 @@ import Login from "./Login/page";
 import CreatePassword from "./CreatePassword/page";
 import Loading from "./components/Loading";
 
-const start = Date.now();
-
 export default function Home() {
   const { data: sessionData, status } = useSession();
 

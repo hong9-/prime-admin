@@ -77,7 +77,6 @@ let total = 0;
 let pageMax = 0;
 
 const checkFilter = (header: string)=> ['담당TM', '담당영업', '상태'].indexOf(header) === -1
-
 const ScheduleTable = () => {
   const defaultFilter = useAppSelector((state) => state.filter) // 테마 store.tsx
 
@@ -86,7 +85,7 @@ const ScheduleTable = () => {
   let [ schedule, setSchedule ] = useState(null as scheduleDisplay|{date: string, id: undefined}|null)
   let [ orderItem, setOrderItem] = useState('date' as orderItem);
   let [ orderDirection, setOrderDirection ] = useState('desc' as orderDirection);
-  let [ filter, setFilter ] = useState(defaultFilter || {} as filter);
+  let [ filter, setFilter ] = useState({} as filter);
   let [ currentPage, setCurrentPage ] = useState(1 as number);
   let [ from, setFrom ] = useState(defaultFromDate);
   let [ to, setTo ] = useState(defaultToDate);
@@ -95,10 +94,9 @@ const ScheduleTable = () => {
   const dispatch = useAppDispatch();
 
   if(defaultFilter) {
-    console.log('reset dispatch');
+    setFilter(defaultFilter);
     dispatch({ type: 'set', filter: undefined});
   }
-  console.log(defaultFilter, filter);
 
   // pagination setting
   let minPage: number, maxPage: number;
@@ -118,7 +116,6 @@ const ScheduleTable = () => {
       orderItem,
       orderDirection,
       filter,
-      // filter: defaultFilter || filter,
       currentAmount: (currentPage - 1) * tableItemMax,
       from: range?.from,
       to: range?.to,

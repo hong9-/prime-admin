@@ -115,7 +115,7 @@ const CreatePassword = () => {
                         name="confirmPassword"
                         placeholder="비밀번호 확인"
                         floatingLabel="비밀번호 확인"
-                        autoComplete="confirm-password"
+                        autoComplete="new-password"
                         feedbackInvalid="비밀번호가 다릅니다."
                         valid={confirmPasswordValid}
                         invalid={confirmPasswordInvalid}

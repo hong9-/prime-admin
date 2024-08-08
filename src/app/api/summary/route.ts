@@ -104,17 +104,17 @@ export const POST = sessionHandler(async (prisma: PrismaClient, user: userInfo, 
   const { role } = user;
   const now = new Date();
   const today = dateToForm(now, dateToForm.NOHOUR);
+  const todayTime = new Date(today).getTime();
+  now.setTime(todayTime);
   now.setDate(now.getDate() - 1);
-  now.setHours(0);
-  now.setMinutes(0);
-  now.setSeconds(0);
-  now.setMilliseconds(0);
   const yesterdayStart = dateToForm(now, dateToForm.NOHOUR);
   
+  now.setTime(todayTime);
   now.setDate(now.getDate() - now.getDay());
   const lastWeekEnd = dateToForm(now, dateToForm.NOHOUR);
   now.setTime(now.getTime() - 86400000 * 7)
   const lastWeekStart = dateToForm(now, dateToForm.NOHOUR);
+  now.setTime(todayTime);
   now.setDate(1);
   const currentMonthStart = dateToForm(now, dateToForm.NOHOUR);
   now.setMonth((now.getMonth() - 1) % 12);

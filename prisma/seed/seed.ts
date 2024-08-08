@@ -88,7 +88,7 @@ async function main() {
     '남산위에저소나무철갑을두른듯바람서리불변함은우리기상일세무궁화삼천리화려강산대한사람대한으로길이보전하세',
   ];
   
-  const defaultTime = new Date('2024-06-01').getTime()
+  const defaultTime = new Date('2024-07-01').getTime()
   const scheduleList = [{
     phone: '05129228179',
     address: '대구광역시 수성구 들안로 38, 2023 들안길 푸드페스티벌 로드레스토랑 (두산동)',

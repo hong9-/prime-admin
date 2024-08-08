@@ -88,7 +88,7 @@ const Login = () => {
                       <CFormInput
                         placeholder="아이디"
                         floatingLabel="아이디"
-                        autoComplete="userId"
+                        autoComplete="username"
                         onChange={onChange}
                         name="userId"
                         id="UserId"
