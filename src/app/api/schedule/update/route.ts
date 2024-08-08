@@ -59,6 +59,7 @@ export const POST = sessionHandler(async (prisma: PrismaClient, user: userInfo, 
     data,
     select: {
       id,
+      company,
       manager: {
         select: {
           name: true,
@@ -70,7 +71,7 @@ export const POST = sessionHandler(async (prisma: PrismaClient, user: userInfo, 
   if(result === ScheduleResult.CONTRACT) {
     const notificationResponse = await prisma.notification.create({
       data: {
-        message: `${dbResponse.manager.name} 계약 체결 완료`,
+        message: `${dbResponse.manager.name} ${company} 계약`,
         link: `/ScheduleList/${dbResponse.id}`,
         userId: 'admin001',
       }
