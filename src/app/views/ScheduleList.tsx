@@ -39,7 +39,7 @@ import { Role } from "@prisma/client";
 import { useAppSelector } from "app/hooks";
 import { UserInfo } from "app/store";
 
-let _modal: boolean = false;
+// let _modal: boolean = false;
 const ScheduleList = () => {
   let location = usePathname();
   let idMatch = location.match(/Schedule(?:List|Table)\/(\d+)/);
@@ -47,11 +47,10 @@ const ScheduleList = () => {
   let route = useRouter();
   const defaultFilter = useAppSelector((state) => state.filter) // 테마 store.tsx
 
-  console.log(defaultFilter);
   let doubleClick: Date | boolean = false;
   let [ events, setEvents ] = useState<Array<any>>();
   let [ schedule, setSchedule ] = useState(null as scheduleDisplay|{date: string, id: undefined}|null);
-  let [ modal, setModal ] = useState(_modal);
+  let [ modal, setModal ] = useState(false);
   let [ range, setRange ] = useState({from: new Date(0), to: new Date(0)})
   let [ needRefresh, setNeedRefresh ] = useState(false);
   let [ filter, setFilter ] = useState(defaultFilter || {} as filter);
@@ -68,7 +67,7 @@ const ScheduleList = () => {
         id: undefined,
         date: dateToForm(event.date)
       });
-      _modal = true;
+      // _modal = true;
       setModal(true);
     } else {
       doubleClick = event.date.toISOString();
@@ -83,7 +82,8 @@ const ScheduleList = () => {
     if(events) {
       let schedule: any = events.find((_schedule:any)=> _schedule.id == event.id);
       setSchedule(scheduleToDisplay(schedule));
-      _modal = true;setModal(true);
+      // _modal = true;
+      setModal(true);
     }
   }
 
@@ -105,7 +105,8 @@ const ScheduleList = () => {
     apiRequest('post', requestUrl, request).then(({code, message})=> {
       if(code) return alert('생성 실패\n\n' + JSON.stringify(message));
 
-      _modal = false;setModal(false);
+      // _modal = false;
+      setModal(false);
       setNeedRefresh(!needRefresh);
       // setRange(range);
     })
@@ -115,7 +116,8 @@ const ScheduleList = () => {
     apiRequest('post', 'schedule/remove', { id }).then(({code, message})=> {
       if(code) return alert('생성 실패\n\n' + JSON.stringify(message));
 
-      _modal = false;setModal(false);
+      // _modal = false;
+      setModal(false);
       setNeedRefresh(!needRefresh);
       // setRange(range);
     })
@@ -163,7 +165,7 @@ const ScheduleList = () => {
         prms.push(getSchedule(id).then((schedule)=> {
           if(schedule) {
             setSchedule(scheduleToDisplay(schedule));
-            _modal = true;
+            // _modal = true;
             setModal(true);
           }
         }));
@@ -269,7 +271,7 @@ const ScheduleList = () => {
               postUser: {
                 text: '일정등록',
                 click: ()=>{
-                  _modal = true;
+                  // _modal = true;
                   setModal(true);
                 },
               },
@@ -287,7 +289,7 @@ const ScheduleList = () => {
             headerToolbar={{
               left: 'title',
               center: '',
-              right: 'postUser prev,next',
+              right: (user.role !== Role.SALES ? 'postUser ' : '') + 'prev,next',
             }}
           />
         </CCardBody>
@@ -299,7 +301,7 @@ const ScheduleList = () => {
         onSubmit={onEventSubmit}
         onRemove={onEventRemove}
         onClose={()=>{
-          _modal = false;
+          // _modal = false;
           setModal(false);
           setSchedule(null);
         }}

@@ -18,10 +18,10 @@ export interface Notification {
 }
 
 export interface Summary {
-  callThisWeek: Number,
-  callThisMonth: Number,
-  dealThisWeek: Number,
-  dealThisMonth: Number,
+  callThisWeek: number,
+  callThisMonth: number,
+  dealThisWeek: number,
+  dealThisMonth: number,
 }
 
 export interface Worker {
@@ -114,7 +114,7 @@ export const { handlers, signIn, signOut, auth } = NextAuth({
             }
           }) || user || session.user;
         } catch(e) {
-          console.log(e);
+          // console.log(e);
         }
       }
 
@@ -155,8 +155,6 @@ export const { handlers, signIn, signOut, auth } = NextAuth({
           return user;
         }
 
-        // console.log('User: ', user);
-
         let { hash } = await prisma.user.findUnique({
           where: {
             email: user.email
@@ -167,7 +165,6 @@ export const { handlers, signIn, signOut, auth } = NextAuth({
         }) || {hash:''};
 
         // console.log('hash : ', hash);
-
         // console.log('start validating!!!!!!!!!!!!!!!!!!!!\n\t', hash)
         if(await validatePassword(credentials.password, hash)) {
           // console.log(`user.email: ${user.email} validating true`)

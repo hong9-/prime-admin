@@ -55,11 +55,12 @@ const numberFix = (input: number, fix: number) => {
   return ("0" + input).slice(-fix);
 }
 
-export type dateType = 'NOHOUR'|'WITHHOUR';
+export type dateType = 'NOHOUR'|'WITHHOUR'|'NOYEAR';
 export const dateToForm = (date:Date, type?: dateType )=> {
-  let defaultTime = `${
+  let defaultTime = type === dateToForm.NOYEAR ? '' : `${
     numberFix(date.getFullYear(), 4)
-  }-${
+  }-`;
+  defaultTime += `${
     numberFix(date.getMonth()+1, 2)
   }-${
     numberFix(date.getDate(), 2)
@@ -71,11 +72,13 @@ export const dateToForm = (date:Date, type?: dateType )=> {
 
     defaultTime += ` ${numberFix(hour, 2)}:${numberFix(minute, 2)}`;
   }
+
   return defaultTime;
 }
 
 dateToForm.NOHOUR = 'NOHOUR' as dateType;
 dateToForm.WITHHOUR = 'WITHHOUR' as dateType;
+dateToForm.NOYEAR = 'NOYEAR' as dateType;
 
 export const resultMap = {
   NOTYET: "방문 예정",

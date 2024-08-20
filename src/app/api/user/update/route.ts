@@ -9,7 +9,7 @@ export const POST = sessionHandler(async (prisma: PrismaClient, user: userInfo, 
   const data: any = {
     email,
     needPasswordReset,
-    hash: process.env.DEFAULT_HASH,
+    ...body,
   };
 
   if(needPasswordReset) {

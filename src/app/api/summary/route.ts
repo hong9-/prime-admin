@@ -231,12 +231,33 @@ export const POST = sessionHandler(async (prisma: PrismaClient, user: userInfo, 
       where: defaultWhere
     });
 
+    const remainSchedules = await (role === 'SALES' ? prisma.schedule.findMany({
+      where: {
+        AND: [{
+          managerId: user.email,
+        }, {
+          date: {
+            gt: new Date(todayStart),
+          },
+        }],
+      },
+      select: {
+        company: true,
+        date: true,
+        companyManager: true,
+        phone: true,
+        addressAbstract: true,
+        result: true,
+      }
+    }) : [])
+
     return {
       code: 0,
       currentWeekTotal,
       lastWeekTotal,
       yesterdayTotal,
       todayTotal,
+      remainSchedules,
     }    
   }
 });

@@ -1,6 +1,6 @@
 // "use client"
 
-import React, { ChangeEvent, FormEvent, useEffect, useRef, useState } from 'react'
+import React, { ChangeEvent, FormEvent, useEffect, useState } from 'react'
 import {
   CButton,
   CForm,
@@ -37,6 +37,7 @@ interface form {
   companyManager: string,
   phone: string,
   address: string,
+  addressAbstract: string,
   note: string,
   date: string,
   manager: string,
@@ -56,6 +57,7 @@ const formDefault: form = {
   companyManager: '',
   phone: '',
   address: '',
+  addressAbstract: '',
   note: '',
   date: '',
   manager: '',
@@ -147,8 +149,12 @@ const ScheduleInfo = (props:any) => {
 
   const handleAddress = (_address: Address)=> {
     onAddressModalClose();
-    if(_address.address)
-      setForm({...form, address: _address.address});
+    if(_address.address) {
+      let addressAbstract = [_address.sido,
+      _address.sigungu,
+      _address.bname2 ? _address.bname2 : _address.bname].join(' ');
+      setForm({...form, address: _address.address, addressAbstract});
+    }
   }
 
   const handleDatePickerChange = (e: any, b: any)=> {
@@ -300,7 +306,7 @@ const ScheduleInfo = (props:any) => {
                 <DateTimePicker
                   format="YYYY-MM-DD HH:mm"
                   name="date"
-                  readOnly={role === Role.SALES}
+                  // readOnly={role === Role.SALES}
                   // locale={ko}
                   timezone="system"
                   ampm={false}

@@ -1,44 +1,24 @@
-import React, { useEffect, useRef, useState } from 'react'
-import classNames from 'classnames'
+import React, { useEffect, useState } from 'react'
 
 import {
+  CBadge,
   CCard,
   CCardBody,
   CCardHeader,
-  CCardText,
   CCardTitle,
-  // CAvatar,
-  // CButton,
-  // CButtonGroup,
-  // CCard,
-  // CCardBody,
-  // CCardFooter,
-  // CCardHeader,
   CCol,
-  // CProgress,
   CRow,
-  // CTable,
-  // CTableBody,
-  // CTableDataCell,
-  // CTableHead,
-  // CTableHeaderCell,
-  // CTableRow,
-  // CChartLine,
+  CTable,
+  CTableBody,
+  CTableDataCell,
+  CTableHead,
+  CTableHeaderCell,
+  CTableRow,
   CWidgetStatsA,
   CWidgetStatsD,
-  // CWidgetStatsB,
-  // CWidgetStatsC,
-  // CWidgetStatsD,
-  // CWidgetStatsE,
-  // CWidgetStatsF,
 } from '@coreui/react'
 import {
-  CChartBar,
-  CChartDoughnut,
   CChartLine,
-  CChartPie,
-  CChartPolarArea,
-  CChartRadar,
 } from '@coreui/react-chartjs'
 import { getStyle } from '@coreui/utils'
 import CIcon from '@coreui/icons-react'
@@ -48,18 +28,11 @@ import {
 } from '@coreui/icons'
 import { apiRequest } from 'app/api/apiRequest'
 import { CWidgetStatsAProps } from '@coreui/react/dist/esm/components/widgets/CWidgetStatsA'
-import { Role } from '@prisma/client'
+import { Role, Schedule } from '@prisma/client'
 import { UserInfo } from 'app/store'
-import { useAppDispatch, useAppSelector, useAppStore } from 'app/hooks'
-import { filter } from 'app/scheduleUtil'
+import { useAppDispatch, useAppSelector } from 'app/hooks'
 import { useRouter } from 'next/navigation'
-
-// import avatar1 from 'app/assets/images/avatars/1.jpg'
-// import avatar2 from 'app/assets/images/avatars/2.jpg'
-// import avatar3 from 'app/assets/images/avatars/3.jpg'
-// import avatar4 from 'app/assets/images/avatars/4.jpg'
-// import avatar5 from 'app/assets/images/avatars/5.jpg'
-// import avatar6 from 'app/assets/images/avatars/6.jpg'
+import { colorSetBadge, dateToForm, resultMap } from 'app/scheduleUtil'
 
 interface maxPerson{
   number: number,
@@ -184,6 +157,7 @@ const Dashboard = () => {
     lastWeekTotal: 0,
     yesterdayTotal: 0,
     todayTotal: 0,
+    remainSchedules: [] as Array<Schedule>,
   });
   const router = useRouter();
   const user: UserInfo = useAppSelector((state) => state.userInfo)
@@ -201,6 +175,7 @@ const Dashboard = () => {
         lastWeekTotal,
         yesterdayTotal,
         todayTotal,
+        remainSchedules,
       } = res;
 
       if(code) {
@@ -215,6 +190,7 @@ const Dashboard = () => {
         lastWeekTotal,
         yesterdayTotal,
         todayTotal,
+        remainSchedules,
       })
     });
   }, [])
@@ -392,7 +368,7 @@ const Dashboard = () => {
     )
   } else if (user.role === Role.TM) {
     return <CCard>
-      <CCardHeader>등록 현황</CCardHeader>
+      <CCardHeader><CCardTitle><strong>등록 현황</strong></CCardTitle></CCardHeader>
       <CCardBody>
         <CRow className="mb-4" xs={{ gutter: 4 }}>
           <InfoCard
@@ -418,7 +394,7 @@ const Dashboard = () => {
     </CCard>
   } else if (user.role === Role.SALES) {
     return <CCard>
-      <CCardHeader><CCardTitle><strong>계약 현황</strong></CCardTitle></CCardHeader>
+      <CCardHeader><CCardTitle><strong>계약 현황/일정</strong></CCardTitle></CCardHeader>
       <CCardBody>
         <CRow className="mb-4" xs={{ gutter: 4 }}>
           <InfoCard
@@ -440,6 +416,28 @@ const Dashboard = () => {
             onClick={()=>handleClickCard()}
           />
         </CRow>
+        <CTable>
+          <CTableHead>
+            <CTableRow>
+              <CTableHeaderCell>주소</CTableHeaderCell>
+              <CTableHeaderCell>시간</CTableHeaderCell>
+              <CTableHeaderCell>상호</CTableHeaderCell>
+              <CTableHeaderCell>담당자</CTableHeaderCell>
+              <CTableHeaderCell>연락처</CTableHeaderCell>
+            </CTableRow>
+          </CTableHead>
+          <CTableBody>
+            {info.remainSchedules.map((schedule)=>
+              <CTableRow>
+                <CTableDataCell>{schedule.addressAbstract}</CTableDataCell>
+                <CTableDataCell>{dateToForm(new Date(schedule.date), dateToForm.NOYEAR)}</CTableDataCell>
+                <CTableDataCell>{schedule.company}</CTableDataCell>
+                <CTableDataCell>{schedule.companyManager}</CTableDataCell>
+                <CTableDataCell>{schedule.phone}</CTableDataCell>
+              </CTableRow>
+            )}
+          </CTableBody>
+        </CTable>
       </CCardBody>
     </CCard>
   }
