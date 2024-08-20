@@ -427,8 +427,8 @@ const Dashboard = () => {
             </CTableRow>
           </CTableHead>
           <CTableBody>
-            {info.remainSchedules.map((schedule)=>
-              <CTableRow>
+            {info.remainSchedules.map((schedule, i)=>
+              <CTableRow key={i}>
                 <CTableDataCell>{schedule.addressAbstract}</CTableDataCell>
                 <CTableDataCell>{dateToForm(new Date(schedule.date), dateToForm.NOYEAR)}</CTableDataCell>
                 <CTableDataCell>{schedule.company}</CTableDataCell>
