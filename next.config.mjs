@@ -21,6 +21,14 @@ const nextConfig = {
             }
         ]
     },
+    // webpack: (
+    //     config,
+    //     { buildId, dev, isServer, defaultLoaders, nextRuntime, webpack }
+    //     ) => {
+    //         // console.log(`start: \n`, config, dev, isServer, nextRuntime, webpack)
+    //         // Important: return the modified config
+    //         return config
+    // },
     // publicRuntimeConfig: {
     //     version: "0.1.0",
     // },
