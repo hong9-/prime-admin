@@ -10,8 +10,8 @@ generator client {
 
 datasource db {
   provider = "postgresql"
-  url = env("POSTGRES_PRISMA_URL") // uses connection pooling
-  directUrl = env("POSTGRES_URL_NON_POOLING") // uses a direct connection
+  url = env("DATABASE_URL") // uses connection pooling
+  // directUrl = env("POSTGRES_URL_NON_POOLING") // uses a direct connection
 }
 
 model User {
@@ -24,7 +24,7 @@ model User {
   // db for work
   role              Role
   needPasswordReset Boolean         @default(true)
-  hash              String          @default("NOdl81FV8Fj7ttIkRIph9gD2aC8er02OxFpL2iwp1hpc3cLl5OuqrUj_3pMAxYGH1D2mmX1SDfD6bwZlLdj6jQ")
+  hash              String          @default("zy6z3uS4gyFTcg2ICBhwi_yh-SaSsragtyvB5VlCQQJE0RCNKE-IyGSYcXp7-_LWxRZMIYTzKx6cWTf7tA8eAQ")
 
   Session           Session[]
   Account           Account?
