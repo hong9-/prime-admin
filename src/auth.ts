@@ -166,6 +166,7 @@ export const { handlers, signIn, signOut, auth } = NextAuth({
 
         // console.log('hash : ', hash);
         // console.log('start validating!!!!!!!!!!!!!!!!!!!!\n\t', hash)
+        // console.log(credentials.password, await validatePassword(credentials.password, hash));
         if(await validatePassword(credentials.password, hash)) {
           // console.log(`user.email: ${user.email} validating true`)
           // if(user.needPasswordReset) {

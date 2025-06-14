@@ -24,7 +24,7 @@ model User {
   // db for work
   role              Role
   needPasswordReset Boolean         @default(true)
-  hash              String          @default("zy6z3uS4gyFTcg2ICBhwi_yh-SaSsragtyvB5VlCQQJE0RCNKE-IyGSYcXp7-_LWxRZMIYTzKx6cWTf7tA8eAQ")
+  hash              String          @default("yo033lcrEG2PNL4W1-wkMun3BYCUxLXmpjQttMTDUIep2eHX5JzO8FrKH-yt9QE8NSYtPQF6utTU9qGYfeC_6w")
 
   Session           Session[]
   Account           Account?
